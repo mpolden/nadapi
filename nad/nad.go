@@ -33,6 +33,11 @@ func New(device string) (NAD, error) {
 		ParityMode:      serial.PARITY_NONE,
 	}
 	port, err := serial.Open(options)
+	// From RS-232 Protocol for NAD Products v2.02:
+	//
+	// All communication should be done at a rate of 115200 bps with 8 data
+	// bits, 1 stop bit and no parity bits. No flow control should be
+	// performed.
 	if err != nil {
 		return NAD{}, err
 	}
