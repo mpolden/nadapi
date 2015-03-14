@@ -10,7 +10,7 @@ const prefix = "Main"
 var cmdExp = regexp.MustCompile("^" + prefix + "\\." +
 	"(Model|Mute|Power|Source|Speaker[A-B]|Tape1|Volume)" +
 	"([=+-?])" +
-	"(On|Off|CD|Tuner|Video|Disc|Ipod|Tape2|Aux)?\\r$")
+	"([A-Za-z0-9]+|[+-]\\d+)?\\r$")
 
 type Cmd struct {
 	Variable string

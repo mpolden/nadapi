@@ -2,7 +2,6 @@ package nad
 
 import (
 	"bufio"
-	"bytes"
 	"github.com/pkg/term"
 	"io"
 )
@@ -36,89 +35,72 @@ func New(device string) (Client, error) {
 	return Client{port: port}, nil
 }
 
-func (n *Client) Send(cmd Cmd) ([]byte, error) {
-	return n.SendString(cmd.Delimited())
+func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
+	b, err := n.Send([]byte(cmd.Delimited()))
+	if err != nil {
+		return Cmd{}, err
+	}
+	return ParseCmd(string(b))
 }
 
-func (n *Client) SendString(cmd string) ([]byte, error) {
-	_, err := n.port.Write([]byte(cmd))
-	if err != nil {
+func (n *Client) Send(cmd []byte) ([]byte, error) {
+	if _, err := n.port.Write(cmd); err != nil {
 		return nil, err
 	}
 	reader := bufio.NewReader(n.port)
-	reply, err := reader.ReadBytes('\r')
+	b, err := reader.ReadBytes('\r')
 	if err != nil {
 		return nil, err
 	}
-	return bytes.TrimRight(reply, "\r"), nil
+	return b, nil
 }
 
-func (n *Client) Model() (string, error) {
+func (n *Client) Model() (Cmd, error) {
 	cmd := Cmd{Variable: "Model", Operator: "?"}
-	b, err := n.Send(cmd)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return n.SendCmd(cmd)
 }
 
-func (n *Client) enable(variable string, enable bool) (string, error) {
+func (n *Client) enable(variable string, enable bool) (Cmd, error) {
 	cmd := Cmd{Variable: variable, Operator: "="}
 	if enable {
 		cmd.Value = "On"
 	} else {
 		cmd.Value = "Off"
 	}
-	b, err := n.Send(cmd)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return n.SendCmd(cmd)
 }
 
-func (n *Client) Mute(enable bool) (string, error) {
+func (n *Client) Mute(enable bool) (Cmd, error) {
 	return n.enable("Mute", enable)
 }
 
-func (n *Client) Power(enable bool) (string, error) {
+func (n *Client) Power(enable bool) (Cmd, error) {
 	return n.enable("Power", enable)
 }
 
-func (n *Client) SpeakerA(enable bool) (string, error) {
+func (n *Client) SpeakerA(enable bool) (Cmd, error) {
 	return n.enable("SpeakerA", enable)
 }
 
-func (n *Client) SpeakerB(enable bool) (string, error) {
+func (n *Client) SpeakerB(enable bool) (Cmd, error) {
 	return n.enable("SpeakerB", enable)
 }
 
-func (n *Client) Tape1(enable bool) (string, error) {
+func (n *Client) Tape1(enable bool) (Cmd, error) {
 	return n.enable("Tape1", enable)
 }
 
-func (n *Client) Source(source Source) (string, error) {
+func (n *Client) Source(source Source) (Cmd, error) {
 	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(source)}
-	b, err := n.Send(cmd)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return n.SendCmd(cmd)
 }
 
-func (n *Client) VolumeUp() (string, error) {
+func (n *Client) VolumeUp() (Cmd, error) {
 	cmd := Cmd{Variable: "Volume", Operator: "+"}
-	b, err := n.Send(cmd)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return n.SendCmd(cmd)
 }
 
-func (n *Client) VolumeDown() (string, error) {
+func (n *Client) VolumeDown() (Cmd, error) {
 	cmd := Cmd{Variable: "Volume", Operator: "-"}
-	b, err := n.Send(cmd)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return n.SendCmd(cmd)
 }

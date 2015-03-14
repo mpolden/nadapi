@@ -22,10 +22,8 @@ func (p *Port) Read(b []byte) (n int, err error) {
 func (p *Port) Write(b []byte) (n int, err error) {
 	cmd := string(b)
 	switch cmd {
-	case "\rfoo?\r":
-		p.reply <- "bar\r"
 	case "\rMain.Model?\r":
-		p.reply <- "C356\r"
+		p.reply <- "Main.Model=C356\r"
 	case "\rMain.Mute=On\r":
 		p.reply <- "Main.Mute=On\r"
 	case "\rMain.Mute=Off\r":
@@ -64,25 +62,13 @@ func newClient() Client {
 	return Client{port: port}
 }
 
-func TestSendString(t *testing.T) {
-	nad := newClient()
-	b, err := nad.SendString("\rfoo?\r")
-	if err != nil {
-		t.Fatal(err)
-	}
-	actual := string(b)
-	if expected := "bar"; actual != expected {
-		t.Errorf("Expected %q, got %q", expected, actual)
-	}
-}
-
 func TestModel(t *testing.T) {
 	nad := newClient()
 	actual, err := nad.Model()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "C356"; actual != expected {
+	if expected := "Main.Model=C356"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -93,14 +79,14 @@ func TestEnable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Power=On"; actual != expected {
+	if expected := "Main.Power=On"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 	actual, err = nad.enable("Power", false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Power=Off"; actual != expected {
+	if expected := "Main.Power=Off"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -111,7 +97,7 @@ func TestMuteEnable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Mute=On"; actual != expected {
+	if expected := "Main.Mute=On"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -122,7 +108,7 @@ func TestMuteDisable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Mute=Off"; actual != expected {
+	if expected := "Main.Mute=Off"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -133,7 +119,7 @@ func TestPowerEnable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Power=On"; actual != expected {
+	if expected := "Main.Power=On"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -144,7 +130,7 @@ func TestPowerDisable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Power=Off"; actual != expected {
+	if expected := "Main.Power=Off"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -155,7 +141,7 @@ func TestSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Source=CD"; actual != expected {
+	if expected := "Main.Source=CD"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -166,7 +152,7 @@ func TestSpeakerAEnable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.SpeakerA=On"; actual != expected {
+	if expected := "Main.SpeakerA=On"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -177,7 +163,7 @@ func TestSpeakerADisable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.SpeakerA=Off"; actual != expected {
+	if expected := "Main.SpeakerA=Off"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -188,7 +174,7 @@ func TestSpeakerBEnable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.SpeakerB=On"; actual != expected {
+	if expected := "Main.SpeakerB=On"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -199,7 +185,7 @@ func TestSpeakerBDisable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.SpeakerB=Off"; actual != expected {
+	if expected := "Main.SpeakerB=Off"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -210,7 +196,7 @@ func TestTape1Enable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Tape1=On"; actual != expected {
+	if expected := "Main.Tape1=On"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -221,7 +207,7 @@ func TestTape1Disable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Tape1=Off"; actual != expected {
+	if expected := "Main.Tape1=Off"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -232,7 +218,7 @@ func TestVolumeUp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Volume=+1"; actual != expected {
+	if expected := "Main.Volume=+1"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -243,7 +229,7 @@ func TestVolumeDown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Volume=-1"; actual != expected {
+	if expected := "Main.Volume=-1"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
