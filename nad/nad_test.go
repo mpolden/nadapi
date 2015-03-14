@@ -58,14 +58,14 @@ func (p *Port) Write(b []byte) (n int, err error) {
 	return len(b), nil
 }
 
-func newNAD() NAD {
+func newClient() Client {
 	reply := make(chan string, 1)
 	port := &Port{reply: reply}
-	return NAD{port: port}
+	return Client{port: port}
 }
 
 func TestSendString(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	b, err := nad.SendString("\rfoo?\r")
 	if err != nil {
 		t.Fatal(err)
@@ -77,7 +77,7 @@ func TestSendString(t *testing.T) {
 }
 
 func TestModel(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Model()
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +88,7 @@ func TestModel(t *testing.T) {
 }
 
 func TestEnable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.enable("Power", true)
 	if err != nil {
 		t.Fatal(err)
@@ -106,7 +106,7 @@ func TestEnable(t *testing.T) {
 }
 
 func TestMuteEnable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Mute(true)
 	if err != nil {
 		t.Fatal(err)
@@ -117,7 +117,7 @@ func TestMuteEnable(t *testing.T) {
 }
 
 func TestMuteDisable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Mute(false)
 	if err != nil {
 		t.Fatal(err)
@@ -128,7 +128,7 @@ func TestMuteDisable(t *testing.T) {
 }
 
 func TestPowerEnable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Power(true)
 	if err != nil {
 		t.Fatal(err)
@@ -139,7 +139,7 @@ func TestPowerEnable(t *testing.T) {
 }
 
 func TestPowerDisable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Power(false)
 	if err != nil {
 		t.Fatal(err)
@@ -150,7 +150,7 @@ func TestPowerDisable(t *testing.T) {
 }
 
 func TestSource(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Source(CD)
 	if err != nil {
 		t.Fatal(err)
@@ -161,7 +161,7 @@ func TestSource(t *testing.T) {
 }
 
 func TestSpeakerAEnable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.SpeakerA(true)
 	if err != nil {
 		t.Fatal(err)
@@ -172,7 +172,7 @@ func TestSpeakerAEnable(t *testing.T) {
 }
 
 func TestSpeakerADisable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.SpeakerA(false)
 	if err != nil {
 		t.Fatal(err)
@@ -183,7 +183,7 @@ func TestSpeakerADisable(t *testing.T) {
 }
 
 func TestSpeakerBEnable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.SpeakerB(true)
 	if err != nil {
 		t.Fatal(err)
@@ -194,7 +194,7 @@ func TestSpeakerBEnable(t *testing.T) {
 }
 
 func TestSpeakerBDisable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.SpeakerB(false)
 	if err != nil {
 		t.Fatal(err)
@@ -205,7 +205,7 @@ func TestSpeakerBDisable(t *testing.T) {
 }
 
 func TestTape1Enable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Tape1(true)
 	if err != nil {
 		t.Fatal(err)
@@ -216,7 +216,7 @@ func TestTape1Enable(t *testing.T) {
 }
 
 func TestTape1Disable(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.Tape1(false)
 	if err != nil {
 		t.Fatal(err)
@@ -227,7 +227,7 @@ func TestTape1Disable(t *testing.T) {
 }
 
 func TestVolumeUp(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.VolumeUp()
 	if err != nil {
 		t.Fatal(err)
@@ -238,7 +238,7 @@ func TestVolumeUp(t *testing.T) {
 }
 
 func TestVolumeDown(t *testing.T) {
-	nad := newNAD()
+	nad := newClient()
 	actual, err := nad.VolumeDown()
 	if err != nil {
 		t.Fatal(err)
