@@ -87,6 +87,24 @@ func TestModel(t *testing.T) {
 	}
 }
 
+func TestEnable(t *testing.T) {
+	nad := newNAD()
+	actual, err := nad.enable("Power", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if expected := "Main.Power=On"; actual != expected {
+		t.Errorf("Expected %q, got %q", expected, actual)
+	}
+	actual, err = nad.enable("Power", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if expected := "Main.Power=Off"; actual != expected {
+		t.Errorf("Expected %q, got %q", expected, actual)
+	}
+}
+
 func TestMuteEnable(t *testing.T) {
 	nad := newNAD()
 	actual, err := nad.Mute(true)
