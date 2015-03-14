@@ -26,6 +26,40 @@ func (c *Cmd) Delimited() string {
 	return fmt.Sprintf("\r%s\r", c.String())
 }
 
+func (c *Cmd) Valid() bool {
+	// All variables support querying using ?
+	switch c.Variable {
+	case "Model", "Mute", "Power", "Source", "SpeakerA", "SpeakerB",
+		"Tape1", "Volume":
+		if c.Operator == "?" && c.Value == "" {
+			return true
+		}
+	}
+
+	// Variables which support On/Off toggling
+	switch c.Variable {
+	case "Mute", "Power", "SpeakerA", "SpeakerB", "Tape1":
+		if c.Operator == "=" && (c.Value == "On" || c.Value == "Off") {
+			return true
+		}
+	}
+
+	// Valid sources
+	if c.Variable == "Source" && c.Operator == "=" {
+		switch c.Value {
+		case "CD", "Tuner", "Video", "Disc", "Ipod", "Tape2", "Aux":
+			return true
+		default:
+			return false
+		}
+	}
+
+	// Volume adjustment
+	return c.Variable == "Volume" &&
+		(c.Operator == "+" || c.Operator == "-") &&
+		c.Value == ""
+}
+
 func ParseCmd(s string) (Cmd, error) {
 	m := cmdExp.FindAllStringSubmatch(s, -1)
 	if len(m) == 0 || len(m[0]) < 4 {
