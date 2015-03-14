@@ -40,7 +40,7 @@ func New(device string) (NAD, error) {
 }
 
 func (n *NAD) Send(cmd Cmd) ([]byte, error) {
-	return n.SendString(cmd.String())
+	return n.SendString(cmd.Delimited())
 }
 
 func (n *NAD) SendString(cmd string) ([]byte, error) {

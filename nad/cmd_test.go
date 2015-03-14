@@ -6,8 +6,17 @@ import (
 
 func TestCmdString(t *testing.T) {
 	cmd := Cmd{Variable: "Power", Operator: "=", Value: "On"}
-	expected := "\rMain.Power=On\r"
+	expected := "Main.Power=On"
 	actual := cmd.String()
+	if actual != expected {
+		t.Fatalf("Expected %q, got %q", expected, actual)
+	}
+}
+
+func TestCmdDelimited(t *testing.T) {
+	cmd := Cmd{Variable: "Power", Operator: "=", Value: "On"}
+	expected := "\rMain.Power=On\r"
+	actual := cmd.Delimited()
 	if actual != expected {
 		t.Fatalf("Expected %q, got %q", expected, actual)
 	}

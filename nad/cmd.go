@@ -19,8 +19,11 @@ type Cmd struct {
 }
 
 func (c *Cmd) String() string {
-	return fmt.Sprintf("\r%s.%s%s%s\r", prefix, c.Variable, c.Operator,
-		c.Value)
+	return fmt.Sprintf("%s.%s%s%s", prefix, c.Variable, c.Operator, c.Value)
+}
+
+func (c *Cmd) Delimited() string {
+	return fmt.Sprintf("\r%s\r", c.String())
 }
 
 func ParseCmd(s string) (Cmd, error) {
