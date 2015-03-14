@@ -44,9 +44,15 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 			Message: "invalid command",
 		}
 	}
-	// XXX: Send command
-	// b, err := client.Send(cmd)
-	return cmd, nil
+	reply, err := a.Client.SendCmd(cmd)
+	if err != nil {
+		return nil, &Error{
+			err:     err,
+			Status:  http.StatusInternalServerError,
+			Message: "failed to send command",
+		}
+	}
+	return reply, nil
 }
 
 func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {

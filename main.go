@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/jessevdk/go-flags"
 	"github.com/martinp/nadapi/api"
-	//"github.com/martinp/nadapi/nad"
+	"github.com/martinp/nadapi/nad"
 	"log"
 	"os"
 )
@@ -18,12 +18,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// nad, err := nad.New(opts.Device)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	nad, err := nad.New(opts.Device)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	api := api.API{}
+	api := api.New(nad)
 
 	log.Printf("Listening on %s", opts.Listen)
 	if err := api.ListenAndServe(opts.Listen); err != nil {
