@@ -8,6 +8,28 @@ import (
 	"io"
 )
 
+type Source string
+
+const (
+	CD    Source = "CD"
+	Tuner Source = "Tuner"
+	Video Source = "Video"
+	Disc  Source = "Disc"
+	Ipod  Source = "Ipod"
+	Tape2 Source = "Tape2"
+	Aux   Source = "Aux"
+)
+
+type Cmd struct {
+	Variable string
+	Operator string
+	Value    string
+}
+
+func (c *Cmd) String() string {
+	return fmt.Sprintf("\rMain.%s%s%s\r", c.Variable, c.Operator, c.Value)
+}
+
 type NAD struct {
 	port io.ReadWriteCloser
 }
@@ -28,8 +50,11 @@ func New(device string) (NAD, error) {
 	return NAD{port: port}, nil
 }
 
-func (n *NAD) Send(cmd string) ([]byte, error) {
-	cmd = fmt.Sprintf("\r%s\r", cmd)
+func (n *NAD) Send(cmd Cmd) ([]byte, error) {
+	return n.SendString(cmd.String())
+}
+
+func (n *NAD) SendString(cmd string) ([]byte, error) {
 	_, err := n.port.Write([]byte(cmd))
 	if err != nil {
 		return nil, err
@@ -43,7 +68,22 @@ func (n *NAD) Send(cmd string) ([]byte, error) {
 }
 
 func (n *NAD) Model() (string, error) {
-	b, err := n.Send("Main.Model?")
+	cmd := Cmd{Variable: "Model", Operator: "?"}
+	b, err := n.Send(cmd)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func (n *NAD) enable(variable string, enable bool) (string, error) {
+	cmd := Cmd{Variable: variable, Operator: "="}
+	if enable {
+		cmd.Value = "On"
+	} else {
+		cmd.Value = "Off"
+	}
+	b, err := n.Send(cmd)
 	if err != nil {
 		return "", err
 	}
@@ -51,12 +91,45 @@ func (n *NAD) Model() (string, error) {
 }
 
 func (n *NAD) Mute(enable bool) (string, error) {
-	var cmd string
-	if enable {
-		cmd = "Main.Mute=On"
-	} else {
-		cmd = "Main.Mute=Off"
+	return n.enable("Mute", enable)
+}
+
+func (n *NAD) Power(enable bool) (string, error) {
+	return n.enable("Power", enable)
+}
+
+func (n *NAD) SpeakerA(enable bool) (string, error) {
+	return n.enable("SpeakerA", enable)
+}
+
+func (n *NAD) SpeakerB(enable bool) (string, error) {
+	return n.enable("SpeakerB", enable)
+}
+
+func (n *NAD) Tape1(enable bool) (string, error) {
+	return n.enable("Tape1", enable)
+}
+
+func (n *NAD) Source(source Source) (string, error) {
+	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(source)}
+	b, err := n.Send(cmd)
+	if err != nil {
+		return "", err
 	}
+	return string(b), nil
+}
+
+func (n *NAD) VolumeUp() (string, error) {
+	cmd := Cmd{Variable: "Volume", Operator: "+"}
+	b, err := n.Send(cmd)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func (n *NAD) VolumeDown() (string, error) {
+	cmd := Cmd{Variable: "Volume", Operator: "-"}
 	b, err := n.Send(cmd)
 	if err != nil {
 		return "", err
