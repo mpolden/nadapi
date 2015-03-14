@@ -64,15 +64,6 @@ func newNAD() NAD {
 	return NAD{port: port}
 }
 
-func TestCmdString(t *testing.T) {
-	cmd := Cmd{Variable: "Power", Operator: "=", Value: "On"}
-	expected := "\rMain.Power=On\r"
-	actual := cmd.String()
-	if actual != expected {
-		t.Fatalf("Expected %q, got %q", expected, actual)
-	}
-}
-
 func TestSendString(t *testing.T) {
 	nad := newNAD()
 	b, err := nad.SendString("\rfoo?\r")

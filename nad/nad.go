@@ -3,7 +3,6 @@ package nad
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"github.com/jacobsa/go-serial/serial"
 	"io"
 )
@@ -19,16 +18,6 @@ const (
 	Tape2 Source = "Tape2"
 	Aux   Source = "Aux"
 )
-
-type Cmd struct {
-	Variable string
-	Operator string
-	Value    string
-}
-
-func (c *Cmd) String() string {
-	return fmt.Sprintf("\rMain.%s%s%s\r", c.Variable, c.Operator, c.Value)
-}
 
 type NAD struct {
 	port io.ReadWriteCloser
