@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	//"fmt"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/martinp/nadapi/nad"
@@ -35,9 +34,18 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 		return nil, &Error{
 			err:     err,
 			Status:  http.StatusBadRequest,
-			Message: "invalid json",
+			Message: "invalid JSON",
 		}
 	}
+	if !cmd.Valid() {
+		return nil, &Error{
+			err:     nil,
+			Status:  http.StatusBadRequest,
+			Message: "invalid command",
+		}
+	}
+	// XXX: Send command
+	// b, err := client.Send(cmd)
 	return cmd, nil
 }
 
