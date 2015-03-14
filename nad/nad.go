@@ -3,7 +3,7 @@ package nad
 import (
 	"bufio"
 	"bytes"
-	"github.com/jacobsa/go-serial/serial"
+	"github.com/pkg/term"
 	"io"
 )
 
@@ -24,20 +24,12 @@ type NAD struct {
 }
 
 func New(device string) (NAD, error) {
-	options := serial.OpenOptions{
-		PortName:        device,
-		BaudRate:        115200,
-		DataBits:        8,
-		StopBits:        1,
-		MinimumReadSize: 4,
-		ParityMode:      serial.PARITY_NONE,
-	}
-	port, err := serial.Open(options)
 	// From RS-232 Protocol for NAD Products v2.02:
 	//
 	// All communication should be done at a rate of 115200 bps with 8 data
 	// bits, 1 stop bit and no parity bits. No flow control should be
 	// performed.
+	port, err := term.Open(device, term.Speed(115200))
 	if err != nil {
 		return NAD{}, err
 	}
