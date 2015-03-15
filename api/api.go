@@ -34,14 +34,14 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 		return nil, &Error{
 			err:     err,
 			Status:  http.StatusBadRequest,
-			Message: "invalid JSON",
+			Message: "Invalid JSON",
 		}
 	}
 	if !cmd.Valid() {
 		return nil, &Error{
 			err:     nil,
 			Status:  http.StatusBadRequest,
-			Message: "invalid command",
+			Message: "Invalid command",
 		}
 	}
 	reply, err := a.Client.SendCmd(cmd)
@@ -49,7 +49,7 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 		return nil, &Error{
 			err:     err,
 			Status:  http.StatusInternalServerError,
-			Message: "failed to send command",
+			Message: "Failed to send command to amplifier",
 		}
 	}
 	return reply, nil
@@ -59,7 +59,7 @@ func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interfa
 	return nil, &Error{
 		err:     nil,
 		Status:  http.StatusNotFound,
-		Message: "route not found",
+		Message: "Not found",
 	}
 }
 
