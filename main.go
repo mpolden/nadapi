@@ -19,17 +19,19 @@ func main() {
 		Listen string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
 	}
 
-	var cli struct {
-		Command string `short:"c" long:"command" description:"Command to send" required:"true"`
-	}
+	var send = struct {
+		Args struct {
+			Command string `positional-arg-name:"<command>" description:"Command to send"`
+		} `positional-args:"yes" required:"yes"`
+	}{}
 
 	p := flags.NewParser(&opts, flags.Default)
 	if _, err := p.AddCommand("server", "Start API server",
 		"REST API for NAD amplifier.", &server); err != nil {
 		log.Fatal(err)
 	}
-	if _, err := p.AddCommand("cli", "Send command",
-		"Send command to NAD amplifier.", &cli); err != nil {
+	if _, err := p.AddCommand("send", "Send command",
+		"Send command to NAD amplifier.", &send); err != nil {
 		log.Fatal(err)
 	}
 
@@ -50,8 +52,8 @@ func main() {
 		if err := api.ListenAndServe(server.Listen); err != nil {
 			log.Fatal(err)
 		}
-	case "cli":
-		reply, err := nad.SendString(cli.Command)
+	case "send":
+		reply, err := nad.SendString(send.Args.Command)
 		if err != nil {
 			log.Fatal(err)
 		}
