@@ -24,14 +24,12 @@ func main() {
 	}
 
 	p := flags.NewParser(&opts, flags.Default)
-	serverCmd, err := p.AddCommand("server", "Serve API",
-		"REST API for NAD amplifier.", &server)
-	if err != nil {
+	if _, err := p.AddCommand("server", "Start API server",
+		"REST API for NAD amplifier.", &server); err != nil {
 		log.Fatal(err)
 	}
-	cliCmd, err := p.AddCommand("cli", "Send command",
-		"Send command to a NAD amplifier.", &cli)
-	if err != nil {
+	if _, err := p.AddCommand("cli", "Send command",
+		"Send command to NAD amplifier.", &cli); err != nil {
 		log.Fatal(err)
 	}
 
@@ -45,17 +43,20 @@ func main() {
 	}
 	nad.EnableVolume = opts.EnableVolume
 
-	api := api.New(nad)
-	if p.Active == serverCmd {
+	switch p.Active.Name {
+	case "server":
+		api := api.New(nad)
 		log.Printf("Listening on %s", server.Listen)
 		if err := api.ListenAndServe(server.Listen); err != nil {
 			log.Fatal(err)
 		}
-	} else if p.Active == cliCmd {
+	case "cli":
 		reply, err := nad.SendString(cli.Command)
 		if err != nil {
 			log.Fatal(err)
 		}
 		fmt.Println(reply)
+	default:
+		log.Fatal("unknown subcommand")
 	}
 }
