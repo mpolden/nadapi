@@ -44,6 +44,9 @@ func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 	if cmd.Variable == "Volume" && !n.EnableVolume {
 		return Cmd{}, errors.New("volume adjustment is not enabled")
 	}
+	if !cmd.Valid() {
+		return Cmd{}, errors.New("invalid command")
+	}
 	b, err := n.Send([]byte(cmd.Delimited()))
 	if err != nil {
 		return Cmd{}, err

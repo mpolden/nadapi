@@ -37,13 +37,6 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 			Message: "Invalid JSON",
 		}
 	}
-	if !cmd.Valid() {
-		return nil, &Error{
-			err:     nil,
-			Status:  http.StatusBadRequest,
-			Message: "Invalid command",
-		}
-	}
 	reply, err := a.Client.SendCmd(cmd)
 	if err != nil {
 		return nil, &Error{
