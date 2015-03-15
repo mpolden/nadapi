@@ -10,8 +10,9 @@ import (
 
 func main() {
 	var opts struct {
-		Listen string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
-		Device string `short:"d" long:"device" description:"Path to serial device" value-name:"FILE" required:"true"`
+		Listen       string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
+		Device       string `short:"d" long:"device" description:"Path to serial device" value-name:"FILE" required:"true"`
+		EnableVolume bool   `short:"x" long:"volume" description:"Enable volume adjustment. Use with caution!"`
 	}
 	_, err := flags.ParseArgs(&opts, os.Args)
 	if err != nil {
@@ -22,6 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	nad.EnableVolume = opts.EnableVolume
 
 	api := api.New(nad)
 

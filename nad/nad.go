@@ -2,6 +2,7 @@ package nad
 
 import (
 	"bufio"
+	"errors"
 	"github.com/pkg/term"
 	"io"
 )
@@ -19,7 +20,8 @@ const (
 )
 
 type Client struct {
-	port io.ReadWriteCloser
+	port         io.ReadWriteCloser
+	EnableVolume bool
 }
 
 func New(device string) (Client, error) {
@@ -36,6 +38,12 @@ func New(device string) (Client, error) {
 }
 
 func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
+	// Check if volume adjustment is explicitly enabled. This check is done
+	// because incorrect volume adjust might damage your amp, speakers
+	// and/or cat.
+	if cmd.Variable == "Volume" && !n.EnableVolume {
+		return Cmd{}, errors.New("volume adjustment is not enabled")
+	}
 	b, err := n.Send([]byte(cmd.Delimited()))
 	if err != nil {
 		return Cmd{}, err

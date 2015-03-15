@@ -59,7 +59,7 @@ func (p *Port) Write(b []byte) (n int, err error) {
 func newClient() Client {
 	reply := make(chan string, 1)
 	port := &Port{reply: reply}
-	return Client{port: port}
+	return Client{port: port, EnableVolume: true}
 }
 
 func TestModel(t *testing.T) {
@@ -231,5 +231,24 @@ func TestVolumeDown(t *testing.T) {
 	}
 	if expected := "Main.Volume=-1"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
+	}
+}
+
+func TestEnableVolume(t *testing.T) {
+	nad := newClient()
+	nad.EnableVolume = false
+	if _, err := nad.VolumeUp(); err == nil {
+		t.Error("Expected error")
+	}
+	if _, err := nad.VolumeDown(); err == nil {
+		t.Error("Expected error")
+	}
+	volumeUp := Cmd{Variable: "Volume", Operator: "+"}
+	if _, err := nad.SendCmd(volumeUp); err == nil {
+		t.Error("Expected error")
+	}
+	volumeDown := Cmd{Variable: "Volume", Operator: "-"}
+	if _, err := nad.SendCmd(volumeDown); err == nil {
+		t.Error("Expected error")
 	}
 }
