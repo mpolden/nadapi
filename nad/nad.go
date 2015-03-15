@@ -51,6 +51,18 @@ func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 	return ParseCmd(string(b))
 }
 
+func (n *Client) SendString(s string) (string, error) {
+	cmd, err := ParseCmd(s + "\r")
+	if err != nil {
+		return "", err
+	}
+	reply, err := n.SendCmd(cmd)
+	if err != nil {
+		return "", err
+	}
+	return reply.String(), nil
+}
+
 func (n *Client) Send(cmd []byte) ([]byte, error) {
 	if _, err := n.port.Write(cmd); err != nil {
 		return nil, err

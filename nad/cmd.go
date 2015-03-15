@@ -63,7 +63,7 @@ func (c *Cmd) Valid() bool {
 func ParseCmd(s string) (Cmd, error) {
 	m := cmdExp.FindAllStringSubmatch(s, -1)
 	if len(m) == 0 || len(m[0]) < 4 {
-		return Cmd{}, fmt.Errorf("expected 4 submatches")
+		return Cmd{}, fmt.Errorf("failed to parse command")
 	}
 	return Cmd{
 		Variable: m[0][1],
