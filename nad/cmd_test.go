@@ -59,7 +59,7 @@ func TestCmdValid(t *testing.T) {
 	assertTrue(Cmd{Variable: "SpeakerA", Operator: "?"})
 	assertTrue(Cmd{Variable: "SpeakerB", Operator: "?"})
 	assertTrue(Cmd{Variable: "Tape1", Operator: "?"})
-	assertTrue(Cmd{Variable: "Volume", Operator: "?"})
+	assertFalse(Cmd{Variable: "Volume", Operator: "?"})
 	assertFalse(Cmd{Variable: "foo", Operator: "?"})
 
 	assertFalse(Cmd{Variable: "Model", Operator: "=", Value: "On"})
@@ -83,4 +83,12 @@ func TestCmdValid(t *testing.T) {
 
 	assertTrue(Cmd{Variable: "Volume", Operator: "+"})
 	assertTrue(Cmd{Variable: "Volume", Operator: "-"})
+}
+
+func TestCommands(t *testing.T) {
+	cmds := commands
+	cmds[3] = "foo"
+	if commands[3] == "foo" {
+		t.Errorf("Expected %q, got %q", "Main.Mute=Off", commands[3])
+	}
 }

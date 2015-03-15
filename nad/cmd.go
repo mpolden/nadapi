@@ -12,6 +12,35 @@ var cmdExp = regexp.MustCompile("^" + prefix + "\\." +
 	"([=+-?])" +
 	"([A-Za-z0-9]+|[+-]\\d+)?\\r$")
 
+var commands = [...]string{
+	"Main.Model?",
+	"Main.Mute?",
+	"Main.Mute=On",
+	"Main.Mute=Off",
+	"Main.Power?",
+	"Main.Power=On",
+	"Main.Power=Off",
+	"Main.Source?",
+	"Main.Source=CD",
+	"Main.Source=Tuner",
+	"Main.Source=Video",
+	"Main.Source=Disc",
+	"Main.Source=Ipod",
+	"Main.Source=Tape2",
+	"Main.Source=Aux",
+	"Main.SpeakerA?",
+	"Main.SpeakerA=On",
+	"Main.SpeakerA=Off",
+	"Main.SpeakerB?",
+	"Main.SpeakerB=On",
+	"Main.SpeakerB=Off",
+	"Main.Tape1?",
+	"Main.Tape1=On",
+	"Main.Tape1=Off",
+	"Main.Volume+",
+	"Main.Volume-",
+}
+
 type Cmd struct {
 	Variable string
 	Operator string
@@ -27,37 +56,12 @@ func (c *Cmd) Delimited() string {
 }
 
 func (c *Cmd) Valid() bool {
-	// All variables support querying using ?
-	switch c.Variable {
-	case "Model", "Mute", "Power", "Source", "SpeakerA", "SpeakerB",
-		"Tape1", "Volume":
-		if c.Operator == "?" && c.Value == "" {
+	for _, cmd := range commands {
+		if c.String() == cmd {
 			return true
 		}
 	}
-
-	// Variables which support On/Off toggling
-	switch c.Variable {
-	case "Mute", "Power", "SpeakerA", "SpeakerB", "Tape1":
-		if c.Operator == "=" && (c.Value == "On" || c.Value == "Off") {
-			return true
-		}
-	}
-
-	// Valid sources
-	if c.Variable == "Source" && c.Operator == "=" {
-		switch c.Value {
-		case "CD", "Tuner", "Video", "Disc", "Ipod", "Tape2", "Aux":
-			return true
-		default:
-			return false
-		}
-	}
-
-	// Volume adjustment
-	return c.Variable == "Volume" &&
-		(c.Operator == "+" || c.Operator == "-") &&
-		c.Value == ""
+	return false
 }
 
 func ParseCmd(s string) (Cmd, error) {
@@ -70,4 +74,8 @@ func ParseCmd(s string) (Cmd, error) {
 		Operator: m[0][2],
 		Value:    m[0][3],
 	}, nil
+}
+
+func Commands() [26]string {
+	return commands
 }
