@@ -62,6 +62,21 @@ func newClient() Client {
 	return Client{port: port, EnableVolume: true}
 }
 
+func TestSendCmd(t *testing.T) {
+	nad := newClient()
+	_, err := nad.SendCmd(Cmd{Variable: "foo"})
+	if err == nil {
+		t.Error("Expected error")
+	}
+	actual, err := nad.SendCmd(Cmd{Variable: "Model", Operator: "?"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if expected := "Main.Model=C356"; actual.String() != expected {
+		t.Errorf("Expected %q, got %q", expected, actual)
+	}
+}
+
 func TestModel(t *testing.T) {
 	nad := newClient()
 	actual, err := nad.Model()
