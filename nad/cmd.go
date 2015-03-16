@@ -10,7 +10,7 @@ const prefix = "Main"
 var cmdExp = regexp.MustCompile("^" + prefix + "\\." +
 	"(Model|Mute|Power|Source|Speaker[A-B]|Tape1|Volume)" +
 	"([=+-?])" +
-	"([A-Za-z0-9]+|[+-]\\d+)?\\r$")
+	"([A-Za-z0-9]+|[+-]\\d+)?\\r?$")
 
 var commands = [...]string{
 	"Main.Model?",
@@ -48,16 +48,17 @@ type Cmd struct {
 }
 
 func (c *Cmd) String() string {
-	return fmt.Sprintf("%s.%s%s%s", prefix, c.Variable, c.Operator, c.Value)
+	return fmt.Sprint(prefix, ".", c.Variable, c.Operator, c.Value)
 }
 
 func (c *Cmd) Delimited() string {
-	return fmt.Sprintf("\r%s\r", c.String())
+	return fmt.Sprint("\r", c.String(), "\r")
 }
 
 func (c *Cmd) Valid() bool {
-	for _, cmd := range commands {
-		if c.String() == cmd {
+	cmd := c.String()
+	for _, c := range commands {
+		if c == cmd {
 			return true
 		}
 	}
@@ -67,7 +68,7 @@ func (c *Cmd) Valid() bool {
 func ParseCmd(s string) (Cmd, error) {
 	m := cmdExp.FindAllStringSubmatch(s, -1)
 	if len(m) == 0 || len(m[0]) < 4 {
-		return Cmd{}, fmt.Errorf("failed to parse command")
+		return Cmd{}, fmt.Errorf("could not parse command: %s", s)
 	}
 	return Cmd{
 		Variable: m[0][1],
@@ -76,6 +77,6 @@ func ParseCmd(s string) (Cmd, error) {
 	}, nil
 }
 
-func Commands() [26]string {
+func Cmds() [26]string {
 	return commands
 }

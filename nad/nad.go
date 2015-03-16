@@ -2,7 +2,7 @@ package nad
 
 import (
 	"bufio"
-	"errors"
+	"fmt"
 	"github.com/pkg/term"
 	"io"
 )
@@ -42,10 +42,10 @@ func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 	// because incorrect volume adjust might damage your amp, speakers
 	// and/or cat.
 	if cmd.Variable == "Volume" && !n.EnableVolume {
-		return Cmd{}, errors.New("volume adjustment is not enabled")
+		return Cmd{}, fmt.Errorf("volume adjustment is not enabled")
 	}
 	if !cmd.Valid() {
-		return Cmd{}, errors.New("invalid command")
+		return Cmd{}, fmt.Errorf("invalid command")
 	}
 	b, err := n.Send([]byte(cmd.Delimited()))
 	if err != nil {
@@ -55,7 +55,7 @@ func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 }
 
 func (n *Client) SendString(s string) (string, error) {
-	cmd, err := ParseCmd(s + "\r")
+	cmd, err := ParseCmd(s)
 	if err != nil {
 		return "", err
 	}

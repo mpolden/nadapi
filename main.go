@@ -14,12 +14,12 @@ type opts struct {
 	EnableVolume bool   `short:"x" long:"volume" description:"Allow volume adjustment. Use with caution!"`
 }
 
-type server struct {
+type serverCmd struct {
 	opts
 	Listen string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
 }
 
-func (s *server) Execute(args []string) error {
+func (s *serverCmd) Execute(args []string) error {
 	client, err := nad.New(s.Device)
 	if err != nil {
 		return err
@@ -33,14 +33,14 @@ func (s *server) Execute(args []string) error {
 	return nil
 }
 
-type send struct {
+type sendCmd struct {
 	opts
 	Args struct {
 		Command string `positional-arg-name:"<command>" description:"Command to send"`
 	} `positional-args:"yes" required:"yes"`
 }
 
-func (s *send) Execute(args []string) error {
+func (s *sendCmd) Execute(args []string) error {
 	client, err := nad.New(s.Device)
 	if err != nil {
 		return err
@@ -54,29 +54,29 @@ func (s *send) Execute(args []string) error {
 	return nil
 }
 
-type list struct{}
+type listCmd struct{}
 
-func (l *list) Execute(args []string) error {
-	for _, cmd := range nad.Commands() {
-		fmt.Println(cmd)
+func (l *listCmd) Execute(args []string) error {
+	for _, c := range nad.Cmds() {
+		fmt.Println(c)
 	}
 	return nil
 }
 
 func main() {
 	p := flags.NewParser(nil, flags.Default)
-	var server server
+	var server serverCmd
 	if _, err := p.AddCommand("server", "Start API server",
 		"REST API for NAD amplifier.", &server); err != nil {
 		log.Fatal(err)
 	}
-	var send send
+	var send sendCmd
 	if _, err := p.AddCommand("send", "Send command",
 		"Send command to NAD amplifier.", &send); err != nil {
 		log.Fatal(err)
 	}
 
-	var list list
+	var list listCmd
 	if _, err := p.AddCommand("list", "List commands",
 		"List commands accepted by NAD amplifier.", &list); err != nil {
 		log.Fatal(err)

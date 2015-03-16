@@ -31,7 +31,7 @@ func TestParseCmd(t *testing.T) {
 	if expected != actual {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
-	actual, err = ParseCmd("Main.Model?\r")
+	actual, err = ParseCmd("Main.Model?")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,10 +85,10 @@ func TestCmdValid(t *testing.T) {
 	assertTrue(Cmd{Variable: "Volume", Operator: "-"})
 }
 
-func TestCommands(t *testing.T) {
-	cmds := commands
+func TestCmds(t *testing.T) {
+	cmds := Cmds()
 	cmds[3] = "foo"
-	if commands[3] == "foo" {
-		t.Errorf("Expected %q, got %q", "Main.Mute=Off", commands[3])
+	if Cmds()[3] == "foo" {
+		t.Errorf("Expected %q, got %q", "Main.Mute=Off", Cmds()[3])
 	}
 }
