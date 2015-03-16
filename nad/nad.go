@@ -7,23 +7,33 @@ import (
 	"io"
 )
 
+// Source represents a source on the amplifier.
 type Source string
 
 const (
-	CD    Source = "CD"
+	// CD source
+	CD Source = "CD"
+	// Tuner source
 	Tuner Source = "Tuner"
+	// Video source
 	Video Source = "Video"
-	Disc  Source = "Disc"
-	Ipod  Source = "Ipod"
+	// Disc source
+	Disc Source = "Disc"
+	// Ipod source
+	Ipod Source = "Ipod"
+	// Tape2 source
 	Tape2 Source = "Tape2"
-	Aux   Source = "Aux"
+	// Aux source
+	Aux Source = "Aux"
 )
 
+// Client reprensents a client to the amplifier.
 type Client struct {
 	port         io.ReadWriteCloser
 	EnableVolume bool
 }
 
+// New creates a new client to the amplifier, using device for communication.
 func New(device string) (Client, error) {
 	// From RS-232 Protocol for NAD Products v2.02:
 	//
@@ -37,6 +47,7 @@ func New(device string) (Client, error) {
 	return Client{port: port}, nil
 }
 
+// SendCmd validates and sends the command cmd to the amplifier.
 func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 	// Check if volume adjustment is explicitly enabled. This check is done
 	// because incorrect volume adjust might damage your amp, speakers
@@ -54,6 +65,7 @@ func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 	return ParseCmd(string(b))
 }
 
+// SendString parses, validates and sends the command s.
 func (n *Client) SendString(s string) (string, error) {
 	cmd, err := ParseCmd(s)
 	if err != nil {
@@ -66,6 +78,7 @@ func (n *Client) SendString(s string) (string, error) {
 	return reply.String(), nil
 }
 
+// Send sends cmd to the amplifier without any preprocessing or validation.
 func (n *Client) Send(cmd []byte) ([]byte, error) {
 	if _, err := n.port.Write(cmd); err != nil {
 		return nil, err
@@ -78,6 +91,7 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 	return b, nil
 }
 
+// Model retrieves the amplifier model.
 func (n *Client) Model() (Cmd, error) {
 	cmd := Cmd{Variable: "Model", Operator: "?"}
 	return n.SendCmd(cmd)
@@ -93,36 +107,44 @@ func (n *Client) enable(variable string, enable bool) (Cmd, error) {
 	return n.SendCmd(cmd)
 }
 
+// Mute mutes the amplifier.
 func (n *Client) Mute(enable bool) (Cmd, error) {
 	return n.enable("Mute", enable)
 }
 
+// Power turns the amplifier on/off.
 func (n *Client) Power(enable bool) (Cmd, error) {
 	return n.enable("Power", enable)
 }
 
+// SpeakerA enables/disables output to speaker A.
 func (n *Client) SpeakerA(enable bool) (Cmd, error) {
 	return n.enable("SpeakerA", enable)
 }
 
+// SpeakerB enables/disables output to speaker B.
 func (n *Client) SpeakerB(enable bool) (Cmd, error) {
 	return n.enable("SpeakerB", enable)
 }
 
+// Tape1 enables/disables output to tape 1.
 func (n *Client) Tape1(enable bool) (Cmd, error) {
 	return n.enable("Tape1", enable)
 }
 
-func (n *Client) Source(source Source) (Cmd, error) {
-	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(source)}
+// Source sets the current audio source, specified by src
+func (n *Client) Source(src Source) (Cmd, error) {
+	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(src)}
 	return n.SendCmd(cmd)
 }
 
+// VolumeUp increases volume.
 func (n *Client) VolumeUp() (Cmd, error) {
 	cmd := Cmd{Variable: "Volume", Operator: "+"}
 	return n.SendCmd(cmd)
 }
 
+// VolumeDown decreases volume.
 func (n *Client) VolumeDown() (Cmd, error) {
 	cmd := Cmd{Variable: "Volume", Operator: "-"}
 	return n.SendCmd(cmd)
