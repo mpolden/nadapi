@@ -9,10 +9,12 @@ import (
 	"net/http"
 )
 
+// API represents an API server.
 type API struct {
 	Client nad.Client
 }
 
+// Error represents an error in the API, which is returned to the user.
 type Error struct {
 	err     error
 	Status  int    `json:"status"`
@@ -26,6 +28,7 @@ func marshal(data interface{}, indent bool) ([]byte, error) {
 	return json.Marshal(data)
 }
 
+// DeviceHandler is the handler which handles communication with an amplifier.
 func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
 	defer req.Body.Close()
 	decoder := json.NewDecoder(req.Body)
@@ -48,6 +51,7 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 	return reply, nil
 }
 
+// NotFoundHandler handles requests to invalid routes.
 func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
 	return nil, &Error{
 		err:     nil,
@@ -56,6 +60,7 @@ func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interfa
 	}
 }
 
+// New returns an new API using client to communicate with an amplifier.
 func New(client nad.Client) API {
 	return API{Client: client}
 }
@@ -94,6 +99,8 @@ func requestFilter(next http.Handler) http.Handler {
 	})
 }
 
+// ListenAndServe listens on the TCP network address addr and starts serving the
+// API.
 func (a *API) ListenAndServe(addr string) error {
 	r := mux.NewRouter()
 	r.Handle("/api/v1/nad", appHandler(a.DeviceHandler))
