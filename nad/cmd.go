@@ -7,11 +7,6 @@ import (
 
 const prefix = "Main"
 
-var cmdExp = regexp.MustCompile("^" + prefix + "\\." +
-	"(Model|Mute|Power|Source|Speaker[A-B]|Tape1|Volume)" +
-	"([=+-?])" +
-	"([A-Za-z0-9]+|[+-]\\d+)?\\r?$")
-
 var commands = [...]string{
 	"Main.Model?",
 	"Main.Mute?",
