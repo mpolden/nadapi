@@ -56,7 +56,7 @@ func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 		return Cmd{}, fmt.Errorf("volume adjustment is not enabled")
 	}
 	if !cmd.Valid() {
-		return Cmd{}, fmt.Errorf("invalid command")
+		return Cmd{}, fmt.Errorf("invalid command: %s", cmd.String())
 	}
 	b, err := n.Send([]byte(cmd.Delimited()))
 	if err != nil {
