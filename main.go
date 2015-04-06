@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
+
 	"github.com/jessevdk/go-flags"
 	"github.com/martinp/nadapi/api"
 	"github.com/martinp/nadapi/nad"
-	"log"
-	"os"
 )
 
 type opts struct {
@@ -46,7 +48,11 @@ func (s *sendCmd) Execute(args []string) error {
 		return err
 	}
 	client.EnableVolume = s.EnableVolume
-	reply, err := client.SendString(s.Args.Command)
+	cmd := s.Args.Command
+	if !strings.HasPrefix(strings.ToLower(cmd), "main.") {
+		cmd = "Main." + cmd
+	}
+	reply, err := client.SendString(cmd)
 	if err != nil {
 		return err
 	}
