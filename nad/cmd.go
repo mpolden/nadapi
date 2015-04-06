@@ -17,12 +17,11 @@ var commands = [...]string{
 	"Main.Power=Off",
 	"Main.Source?",
 	"Main.Source=CD",
-	"Main.Source=Tuner",
-	"Main.Source=Video",
-	"Main.Source=Disc",
-	"Main.Source=Ipod",
-	"Main.Source=Tape2",
-	"Main.Source=Aux",
+	"Main.Source=TUNER",
+	"Main.Source=VIDEO",
+	"Main.Source=DISC/MDC",
+	"Main.Source=TAPE2",
+	"Main.Source=AUX",
 	"Main.SpeakerA?",
 	"Main.SpeakerA=On",
 	"Main.SpeakerA=Off",
@@ -82,6 +81,6 @@ func ParseCmd(s string) (Cmd, error) {
 }
 
 // Cmds returns all valid commands.
-func Cmds() [26]string {
+func Cmds() [25]string {
 	return commands
 }

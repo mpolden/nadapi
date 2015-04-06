@@ -72,12 +72,11 @@ func TestCmdValid(t *testing.T) {
 	assertFalse(Cmd{Variable: "Volume", Operator: "=", Value: "On"})
 
 	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "CD"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "Tuner"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "Video"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "Disc"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "Ipod"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "Tape2"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "Aux"})
+	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "TUNER"})
+	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "VIDEO"})
+	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "DISC/MDC"})
+	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "TAPE2"})
+	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "AUX"})
 	assertFalse(Cmd{Variable: "Source", Operator: "=", Value: "foo"})
 	assertFalse(Cmd{Variable: "Power", Operator: "=", Value: "foo"})
 
