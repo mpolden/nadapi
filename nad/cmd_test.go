@@ -44,47 +44,44 @@ func TestParseCmd(t *testing.T) {
 }
 
 func TestCmdValid(t *testing.T) {
-	assertTrue := func(cmd Cmd) {
-		if !cmd.Valid() {
-			t.Errorf("Expected true for %q", cmd)
+	var tests = []struct {
+		in  Cmd
+		out bool
+	}{
+		{Cmd{Variable: "Model", Operator: "?"}, true},
+		{Cmd{Variable: "Mute", Operator: "?"}, true},
+		{Cmd{Variable: "Power", Operator: "?"}, true},
+		{Cmd{Variable: "power", Operator: "?"}, true},
+		{Cmd{Variable: "Source", Operator: "?"}, true},
+		{Cmd{Variable: "SpeakerA", Operator: "?"}, true},
+		{Cmd{Variable: "SpeakerB", Operator: "?"}, true},
+		{Cmd{Variable: "Tape1", Operator: "?"}, true},
+		{Cmd{Variable: "Mute", Operator: "=", Value: "On"}, true},
+		{Cmd{Variable: "Power", Operator: "=", Value: "On"}, true},
+		{Cmd{Variable: "SpeakerA", Operator: "=", Value: "On"}, true},
+		{Cmd{Variable: "SpeakerB", Operator: "=", Value: "On"}, true},
+		{Cmd{Variable: "Tape1", Operator: "=", Value: "On"}, true},
+		{Cmd{Variable: "Source", Operator: "=", Value: "CD"}, true},
+		{Cmd{Variable: "Source", Operator: "=", Value: "TUNER"}, true},
+		{Cmd{Variable: "Source", Operator: "=", Value: "VIDEO"}, true},
+		{Cmd{Variable: "Source", Operator: "=", Value: "DISC/MDC"}, true},
+		{Cmd{Variable: "Source", Operator: "=", Value: "TAPE2"}, true},
+		{Cmd{Variable: "Source", Operator: "=", Value: "AUX"}, true},
+		{Cmd{Variable: "Volume", Operator: "+"}, true},
+		{Cmd{Variable: "Volume", Operator: "-"}, true},
+		{Cmd{Variable: "Volume", Operator: "?"}, false},
+		{Cmd{Variable: "foo", Operator: "?"}, false},
+		{Cmd{Variable: "Model", Operator: "=", Value: "On"}, false},
+		{Cmd{Variable: "Source", Operator: "=", Value: "On"}, false},
+		{Cmd{Variable: "Volume", Operator: "=", Value: "On"}, false},
+		{Cmd{Variable: "Source", Operator: "=", Value: "foo"}, false},
+		{Cmd{Variable: "Power", Operator: "=", Value: "foo"}, false},
+	}
+	for _, tt := range tests {
+		if valid := tt.in.Valid(); valid != tt.out {
+			t.Errorf("Expected %t, got %t", tt.out, valid)
 		}
 	}
-	assertFalse := func(cmd Cmd) {
-		if cmd.Valid() {
-			t.Errorf("Expected false for %q", cmd)
-		}
-	}
-	assertTrue(Cmd{Variable: "Model", Operator: "?"})
-	assertTrue(Cmd{Variable: "Mute", Operator: "?"})
-	assertTrue(Cmd{Variable: "Power", Operator: "?"})
-	assertTrue(Cmd{Variable: "power", Operator: "?"})
-	assertTrue(Cmd{Variable: "Source", Operator: "?"})
-	assertTrue(Cmd{Variable: "SpeakerA", Operator: "?"})
-	assertTrue(Cmd{Variable: "SpeakerB", Operator: "?"})
-	assertTrue(Cmd{Variable: "Tape1", Operator: "?"})
-	assertFalse(Cmd{Variable: "Volume", Operator: "?"})
-	assertFalse(Cmd{Variable: "foo", Operator: "?"})
-
-	assertFalse(Cmd{Variable: "Model", Operator: "=", Value: "On"})
-	assertTrue(Cmd{Variable: "Mute", Operator: "=", Value: "On"})
-	assertTrue(Cmd{Variable: "Power", Operator: "=", Value: "On"})
-	assertFalse(Cmd{Variable: "Source", Operator: "=", Value: "On"})
-	assertTrue(Cmd{Variable: "SpeakerA", Operator: "=", Value: "On"})
-	assertTrue(Cmd{Variable: "SpeakerB", Operator: "=", Value: "On"})
-	assertTrue(Cmd{Variable: "Tape1", Operator: "=", Value: "On"})
-	assertFalse(Cmd{Variable: "Volume", Operator: "=", Value: "On"})
-
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "CD"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "TUNER"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "VIDEO"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "DISC/MDC"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "TAPE2"})
-	assertTrue(Cmd{Variable: "Source", Operator: "=", Value: "AUX"})
-	assertFalse(Cmd{Variable: "Source", Operator: "=", Value: "foo"})
-	assertFalse(Cmd{Variable: "Power", Operator: "=", Value: "foo"})
-
-	assertTrue(Cmd{Variable: "Volume", Operator: "+"})
-	assertTrue(Cmd{Variable: "Volume", Operator: "-"})
 }
 
 func TestCmds(t *testing.T) {
