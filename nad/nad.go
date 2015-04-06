@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/term"
 	"io"
+	"sync"
 )
 
 // Source represents a source on the amplifier.
@@ -30,6 +31,7 @@ const (
 // Client reprensents a client to the amplifier.
 type Client struct {
 	port         io.ReadWriteCloser
+	mu           sync.Mutex
 	EnableVolume bool
 }
 
@@ -80,6 +82,8 @@ func (n *Client) SendString(s string) (string, error) {
 
 // Send sends cmd to the amplifier without any preprocessing or validation.
 func (n *Client) Send(cmd []byte) ([]byte, error) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
 	if _, err := n.port.Write(cmd); err != nil {
 		return nil, err
 	}
