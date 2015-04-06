@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/martinp/nadapi/api"
 	"github.com/martinp/nadapi/nad"
 )
@@ -47,6 +47,7 @@ func (s *sendCmd) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
+	defer client.Close()
 	client.EnableVolume = s.EnableVolume
 	cmd := s.Args.Command
 	if !strings.HasPrefix(strings.ToLower(cmd), "main.") {

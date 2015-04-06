@@ -30,6 +30,11 @@ func New(device string) (Client, error) {
 	return Client{port: port}, nil
 }
 
+// Close closes the underlying device
+func (n *Client) Close() error {
+	return n.port.Close()
+}
+
 // SendCmd validates and sends the command cmd to the amplifier.
 func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
 	// Check if volume adjustment is explicitly enabled. This check is done
