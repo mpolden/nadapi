@@ -66,10 +66,11 @@ func (c *Cmd) Valid() bool {
 
 // ParseCmd parses s into a command.
 func ParseCmd(s string) (Cmd, error) {
+	s = strings.Trim(s, "\r\n")
 	re := regexp.MustCompile("(?iU)^" + prefix + "\\." +
 		"(.+)" +
 		"([=+?-])" +
-		"(.*)\\n?$")
+		"(.*)$")
 	m := re.FindAllStringSubmatch(s, -1)
 	if len(m) == 0 || len(m[0]) < 4 {
 		return Cmd{}, fmt.Errorf("could not parse command: %q", s)

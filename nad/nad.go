@@ -23,7 +23,7 @@ func New(device string) (Client, error) {
 	// All communication should be done at a rate of 115200 bps with 8 data
 	// bits, 1 stop bit and no parity bits. No flow control should be
 	// performed.
-	port, err := term.Open(device, term.Speed(115200))
+	port, err := term.Open(device, term.Speed(115200), term.RawMode)
 	if err != nil {
 		return Client{}, err
 	}
