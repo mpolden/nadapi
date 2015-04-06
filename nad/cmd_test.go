@@ -23,21 +23,23 @@ func TestCmdDelimited(t *testing.T) {
 }
 
 func TestParseCmd(t *testing.T) {
-	actual, err := ParseCmd("Main.Power=On\n")
-	if err != nil {
-		t.Fatal(err)
+	var tests = []struct {
+		in  string
+		out Cmd
+	}{
+		{"Main.Power=On\n", Cmd{Variable: "Power", Operator: "=", Value: "On"}},
+		{"Main.Model?", Cmd{Variable: "Model", Operator: "?", Value: ""}},
+		{"Main.Model=C356", Cmd{Variable: "Model", Operator: "=", Value: "C356"}},
+		{"main.volume+", Cmd{Variable: "volume", Operator: "+", Value: ""}},
 	}
-	expected := Cmd{Variable: "Power", Operator: "=", Value: "On"}
-	if expected != actual {
-		t.Errorf("Expected %q, got %q", expected, actual)
-	}
-	actual, err = ParseCmd("Main.Model?")
-	if err != nil {
-		t.Fatal(err)
-	}
-	expected = Cmd{Variable: "Model", Operator: "?", Value: ""}
-	if expected != actual {
-		t.Errorf("Expected %q, got %q", expected, actual)
+	for _, tt := range tests {
+		cmd, err := ParseCmd(tt.in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cmd != tt.out {
+			t.Errorf("Expected %q, got %q", tt.out, cmd)
+		}
 	}
 }
 
@@ -55,6 +57,7 @@ func TestCmdValid(t *testing.T) {
 	assertTrue(Cmd{Variable: "Model", Operator: "?"})
 	assertTrue(Cmd{Variable: "Mute", Operator: "?"})
 	assertTrue(Cmd{Variable: "Power", Operator: "?"})
+	assertTrue(Cmd{Variable: "power", Operator: "?"})
 	assertTrue(Cmd{Variable: "Source", Operator: "?"})
 	assertTrue(Cmd{Variable: "SpeakerA", Operator: "?"})
 	assertTrue(Cmd{Variable: "SpeakerB", Operator: "?"})

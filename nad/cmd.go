@@ -3,6 +3,7 @@ package nad
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 const prefix = "Main"
@@ -54,9 +55,9 @@ func (c *Cmd) Delimited() string {
 
 // Valid returns true if command is a command accepted by amplifier.
 func (c *Cmd) Valid() bool {
-	cmd := c.String()
+	cmd := strings.ToLower(c.String())
 	for _, c := range commands {
-		if c == cmd {
+		if strings.ToLower(c) == cmd {
 			return true
 		}
 	}
@@ -65,7 +66,7 @@ func (c *Cmd) Valid() bool {
 
 // ParseCmd parses s into a command.
 func ParseCmd(s string) (Cmd, error) {
-	re := regexp.MustCompile("^" + prefix + "\\." +
+	re := regexp.MustCompile("(?i)^" + prefix + "\\." +
 		"(Model|Mute|Power|Source|Speaker[A-B]|Tape1|Volume)" +
 		"([=+-?])" +
 		"([A-Za-z0-9]+|[+-]\\d+)?\\n?$")
