@@ -10,7 +10,7 @@ import (
 )
 
 type opts struct {
-	Device       string `short:"d" long:"device" description:"Path to serial device" value-name:"FILE" required:"true"`
+	Device       string `short:"d" long:"device" description:"Path to serial device" value-name:"FILE" default:"/dev/ttyUSB0"`
 	EnableVolume bool   `short:"x" long:"volume" description:"Allow volume adjustment. Use with caution!"`
 }
 
