@@ -15,11 +15,11 @@ function vet() {
 
 
 case "$TRAVIS_GO_VERSION" in
-    1.1)
-        # vet isn't compatible with 1.1
-        lint
+    1.1*)
+        # lint isn't compatible with 1.1
+        vet
         ;;
-    1.2)
+    1.2*)
         lint
         # vet doesn't support -copylocks flag in 1.2
         vet
