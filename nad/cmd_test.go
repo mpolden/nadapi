@@ -23,7 +23,7 @@ func TestCmdDelimited(t *testing.T) {
 }
 
 func TestParseCmd(t *testing.T) {
-	actual, err := ParseCmd("Main.Power=On\r")
+	actual, err := ParseCmd("Main.Power=On\n")
 	if err != nil {
 		t.Fatal(err)
 	}
