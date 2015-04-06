@@ -84,10 +84,18 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 		return nil, err
 	}
 	reader := bufio.NewReader(n.port)
-	// Discard first two bytes (\n\n)
-	for i := 0; i < 2; i++ {
-		if _, err := reader.ReadByte(); err != nil {
+	// Discard newlines
+	for {
+		b, err := reader.ReadByte()
+		if err != nil {
 			return nil, err
+		}
+		// Rewind when we hit non-newline
+		if b != '\n' {
+			if err := reader.UnreadByte(); err != nil {
+				return nil, err
+			}
+			break
 		}
 	}
 	b, err := reader.ReadBytes('\n')
