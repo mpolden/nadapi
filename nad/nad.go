@@ -3,9 +3,10 @@ package nad
 import (
 	"bufio"
 	"fmt"
-	"github.com/pkg/term"
 	"io"
 	"sync"
+
+	"github.com/pkg/term"
 )
 
 // Client reprensents a client to the amplifier.
@@ -64,10 +65,10 @@ func (n *Client) SendString(s string) (string, error) {
 func (n *Client) Send(cmd []byte) ([]byte, error) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
+	reader := bufio.NewReader(n.port)
 	if _, err := n.port.Write(cmd); err != nil {
 		return nil, err
 	}
-	reader := bufio.NewReader(n.port)
 	// Discard newlines
 	for {
 		b, err := reader.ReadByte()
