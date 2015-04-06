@@ -32,6 +32,7 @@ func TestParseCmd(t *testing.T) {
 		{"Main.Model=C356", Cmd{Variable: "Model", Operator: "=", Value: "C356"}},
 		{"main.volume+", Cmd{Variable: "volume", Operator: "+", Value: ""}},
 		{"Main.Source=DISC/MDC", Cmd{Variable: "Source", Operator: "=", Value: "DISC/MDC"}},
+		{"Main.Tape1?", Cmd{Variable: "Tape1", Operator: "?", Value: ""}},
 	}
 	for _, tt := range tests {
 		cmd, err := ParseCmd(tt.in)

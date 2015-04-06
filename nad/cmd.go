@@ -66,10 +66,10 @@ func (c *Cmd) Valid() bool {
 
 // ParseCmd parses s into a command.
 func ParseCmd(s string) (Cmd, error) {
-	re := regexp.MustCompile("(?i)^" + prefix + "\\." +
-		"(Model|Mute|Power|Source|Speaker[A-B]|Tape1|Volume)" +
-		"([=+-?])" +
-		"([a-z0-9/]+|[+-]\\d+)?\\n?$")
+	re := regexp.MustCompile("(?iU)^" + prefix + "\\." +
+		"(.+)" +
+		"([=+?-])" +
+		"(.*)\\n?$")
 	m := re.FindAllStringSubmatch(s, -1)
 	if len(m) == 0 || len(m[0]) < 4 {
 		return Cmd{}, fmt.Errorf("could not parse command: %q", s)
