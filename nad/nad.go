@@ -8,26 +8,6 @@ import (
 	"sync"
 )
 
-// Source represents a source on the amplifier.
-type Source string
-
-const (
-	// CD source
-	CD Source = "CD"
-	// Tuner source
-	Tuner Source = "Tuner"
-	// Video source
-	Video Source = "Video"
-	// Disc source
-	Disc Source = "Disc"
-	// Ipod source
-	Ipod Source = "Ipod"
-	// Tape2 source
-	Tape2 Source = "Tape2"
-	// Aux source
-	Aux Source = "Aux"
-)
-
 // Client reprensents a client to the amplifier.
 type Client struct {
 	port         io.ReadWriteCloser
@@ -151,7 +131,7 @@ func (n *Client) Tape1(enable bool) (Cmd, error) {
 }
 
 // Source sets the current audio source, specified by src
-func (n *Client) Source(src Source) (Cmd, error) {
+func (n *Client) Source(src string) (Cmd, error) {
 	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(src)}
 	return n.SendCmd(cmd)
 }

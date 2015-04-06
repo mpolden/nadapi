@@ -152,7 +152,7 @@ func TestPowerDisable(t *testing.T) {
 
 func TestSource(t *testing.T) {
 	nad := newClient()
-	actual, err := nad.Source(CD)
+	actual, err := nad.Source("CD")
 	if err != nil {
 		t.Fatal(err)
 	}
