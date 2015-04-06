@@ -23,33 +23,33 @@ func (p *Port) Write(b []byte) (n int, err error) {
 	cmd := string(b)
 	switch cmd {
 	case "\rMain.Model?\r":
-		p.reply <- "Main.Model=C356\r"
+		p.reply <- "\n\nMain.Model=C356\n"
 	case "\rMain.Mute=On\r":
-		p.reply <- "Main.Mute=On\r"
+		p.reply <- "\n\nMain.Mute=On\n"
 	case "\rMain.Mute=Off\r":
-		p.reply <- "Main.Mute=Off\r"
+		p.reply <- "\n\nMain.Mute=Off\n"
 	case "\rMain.Power=On\r":
-		p.reply <- "Main.Power=On\r"
+		p.reply <- "\n\nMain.Power=On\n"
 	case "\rMain.Power=Off\r":
-		p.reply <- "Main.Power=Off\r"
+		p.reply <- "\n\nMain.Power=Off\n"
 	case "\rMain.Source=CD\r":
-		p.reply <- "Main.Source=CD\r"
+		p.reply <- "\n\nMain.Source=CD\n"
 	case "\rMain.SpeakerA=On\r":
-		p.reply <- "Main.SpeakerA=On\r"
+		p.reply <- "\n\nMain.SpeakerA=On\n"
 	case "\rMain.SpeakerA=Off\r":
-		p.reply <- "Main.SpeakerA=Off\r"
+		p.reply <- "\n\nMain.SpeakerA=Off\n"
 	case "\rMain.SpeakerB=On\r":
-		p.reply <- "Main.SpeakerB=On\r"
+		p.reply <- "\n\nMain.SpeakerB=On\n"
 	case "\rMain.SpeakerB=Off\r":
-		p.reply <- "Main.SpeakerB=Off\r"
+		p.reply <- "\n\nMain.SpeakerB=Off\n"
 	case "\rMain.Tape1=On\r":
-		p.reply <- "Main.Tape1=On\r"
+		p.reply <- "\n\nMain.Tape1=On\n"
 	case "\rMain.Tape1=Off\r":
-		p.reply <- "Main.Tape1=Off\r"
+		p.reply <- "\n\nMain.Tape1=Off\n"
 	case "\rMain.Volume+\r":
-		p.reply <- "Main.Volume=+1\r"
+		p.reply <- "\n\nMain.Volume=+1\n"
 	case "\rMain.Volume-\r":
-		p.reply <- "Main.Volume=-1\r"
+		p.reply <- "\n\nMain.Volume=-1\n"
 	default:
 		return 0, fmt.Errorf("unknown command: %q", cmd)
 	}

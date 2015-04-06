@@ -84,7 +84,13 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 		return nil, err
 	}
 	reader := bufio.NewReader(n.port)
-	b, err := reader.ReadBytes('\r')
+	// Discard first two bytes (\n\n)
+	for i := 0; i < 2; i++ {
+		if _, err := reader.ReadByte(); err != nil {
+			return nil, err
+		}
+	}
+	b, err := reader.ReadBytes('\n')
 	if err != nil {
 		return nil, err
 	}
