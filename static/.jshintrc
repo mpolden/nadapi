@@ -1,0 +1,29 @@
+{
+  "bitwise": false,
+  "curly": true,
+  "eqeqeq": true,
+  "es3": false,
+  "forin": true,
+  "immed": true,
+  "indent": 2,
+  "latedef": true,
+  "newcap": true,
+  "noarg": true,
+  "noempty": true,
+  "nonew": true,
+  "plusplus": true,
+  "undef": true,
+  "unused": true,
+  "trailing": true,
+  "maxparams": 5,
+  "maxdepth": 5,
+  "maxstatements": 20,
+  "maxcomplexity": 5,
+  "maxlen": 120,
+  "browser": true,
+  "globals": {
+    "React": true,
+    "$": true,
+    "console": true
+  }
+}
