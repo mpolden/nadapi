@@ -2,16 +2,19 @@ package api
 
 import (
 	"encoding/json"
+	"log"
+	"net/http"
+	"strings"
+
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/martinp/nadapi/nad"
-	"log"
-	"net/http"
 )
 
 // API represents an API server.
 type API struct {
-	Client nad.Client
+	Client    nad.Client
+	StaticDir string
 }
 
 // Error represents an error in the API, which is returned to the user.
@@ -92,9 +95,11 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func requestFilter(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, indent := r.URL.Query()["pretty"]
-		context.Set(r, "indent", indent)
-		w.Header().Set("Content-Type", "application/json")
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			_, indent := r.URL.Query()["pretty"]
+			context.Set(r, "indent", indent)
+			w.Header().Set("Content-Type", "application/json")
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -105,5 +110,9 @@ func (a *API) ListenAndServe(addr string) error {
 	r := mux.NewRouter()
 	r.Handle("/api/v1/nad", appHandler(a.DeviceHandler))
 	r.NotFoundHandler = appHandler(a.NotFoundHandler)
+	if a.StaticDir != "" {
+		fs := http.StripPrefix("/static/", http.FileServer(http.Dir(a.StaticDir)))
+		r.PathPrefix("/static/").Handler(fs)
+	}
 	return http.ListenAndServe(addr, requestFilter(r))
 }

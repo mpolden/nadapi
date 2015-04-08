@@ -18,7 +18,8 @@ type opts struct {
 
 type serverCmd struct {
 	opts
-	Listen string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
+	Listen    string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
+	StaticDir string `short:"s" long:"static" description:"Path to directory containing static assets" value:"PATH"`
 }
 
 func (s *serverCmd) Execute(args []string) error {
@@ -28,6 +29,7 @@ func (s *serverCmd) Execute(args []string) error {
 	}
 	client.EnableVolume = s.EnableVolume
 	api := api.New(client)
+	api.StaticDir = s.StaticDir
 	log.Printf("Listening on %s", s.Listen)
 	if err := api.ListenAndServe(s.Listen); err != nil {
 		return err
