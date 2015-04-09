@@ -92,6 +92,12 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Discard data written but not transmitted, and data received but not read
+	if t, ok := n.port.(*term.Term); ok {
+		if err := t.Flush(); err != nil {
+			return nil, err
+		}
+	}
 	return b, nil
 }
 
