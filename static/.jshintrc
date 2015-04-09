@@ -12,6 +12,7 @@
   "noempty": true,
   "nonew": true,
   "plusplus": true,
+  "quotmark": "single",
   "undef": true,
   "unused": true,
   "trailing": true,
@@ -22,8 +23,6 @@
   "maxlen": 120,
   "browser": true,
   "globals": {
-    "React": true,
-    "$": true,
-    "console": true
+    "m": true
   }
 }
