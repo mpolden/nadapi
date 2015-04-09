@@ -76,17 +76,17 @@ nad.onoff = function(ctrl, options) {
   var isOn = !!ctrl.state[options.type];
   return m('button[type=button]', {
     style: 'width: 100%',
-    class: isOn ? 'btn btn-success' : 'btn btn-default',
+    class: isOn ? 'btn btn-default btn-lg active' : 'btn btn-lg btn-default',
     onclick: options.onclick
-  }, options.type + (isOn ? ' off' : ' on'));
+  }, [options.icon]);
 };
 
 nad.volume = function(ctrl, options) {
   return m('button[type=button]', {
     style: 'width: 100%',
-    class: 'btn btn-default',
+    class: 'btn btn-default btn-lg',
     onclick: options.onclick
-  }, 'Volume ' + options.type);
+  }, [options.icon]);
 };
 
 nad.source = function(ctrl) {
@@ -110,23 +110,45 @@ nad.view = function(ctrl) {
         nad.console(ctrl)
       ])
     ]),
-    m('div', {class: 'row top-spacing'}, [
-      m('div.col-md-2', [
-        nad.onoff(ctrl, {onclick: ctrl.power, type: 'Power'})
+    m('div.row', [
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.onoff(ctrl, {
+          onclick: ctrl.power,
+          type: 'Power',
+          icon: m('span', {
+            class: 'glyphicon glyphicon-off', 'aria-hidden': true
+          })
+        })
       ]),
-      m('div.col-md-2', [
-        nad.onoff(ctrl, {onclick: ctrl.mute, type: 'Mute'})
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.onoff(ctrl, {
+          onclick: ctrl.mute,
+          type: 'Mute',
+          icon: m('span', {
+            class: 'glyphicon glyphicon-volume-off', 'aria-hidden': true
+          })
+        })
       ])
     ]),
-    m('div', {class: 'row top-spacing'}, [
-      m('div.col-md-2', [
-        nad.volume(ctrl, {onclick: ctrl.volumeUp, type: '+'})
+    m('div.row', [
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.volume(ctrl, {
+          onclick: ctrl.volumeUp, type: '+',
+          icon: m('span', {
+            class: 'glyphicon glyphicon-volume-up', 'aria-hidden': true
+          })
+        })
       ]),
-      m('div.col-md-2', [
-        nad.volume(ctrl, {onclick: ctrl.volumeDown, type: '-'})
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.volume(ctrl, {
+          onclick: ctrl.volumeDown, type: '-',
+          icon: m('span', {
+            class: 'glyphicon glyphicon-volume-down', 'aria-hidden': true
+          })
+        })
       ])
     ]),
-    m('div', {class: 'row top-spacing'}, [
+    m('div.row', {class: 'top-spacing'}, [
       m('div.col-md-4', [
         nad.source(ctrl, {onclick: ctrl.source})
       ])
