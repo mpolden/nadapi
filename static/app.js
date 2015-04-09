@@ -17,7 +17,7 @@ nad.send = function(ctrl, req) {
       return data;
     })
     .then(function (data) {
-      if (data.Value === 'On' || data.value === 'Off') {
+      if (data.Value === 'On' || data.Value === 'Off') {
         ctrl.state[data.Variable] = data.Value === 'On';
       }
     });
@@ -76,7 +76,7 @@ nad.onoff = function(ctrl, options) {
   var isOn = !!ctrl.state[options.type];
   return m('button[type=button]', {
     style: 'width: 100%',
-    class: isOn ? 'btn btn-default btn-lg active' : 'btn btn-lg btn-default',
+    class: 'btn btn-default btn-lg' + (isOn ? ' active' : ''),
     onclick: options.onclick
   }, [options.icon]);
 };
