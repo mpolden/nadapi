@@ -14,6 +14,7 @@ import (
 type opts struct {
 	Device       string `short:"d" long:"device" description:"Path to serial device" value-name:"FILE" default:"/dev/ttyUSB0"`
 	EnableVolume bool   `short:"x" long:"volume" description:"Allow volume adjustment. Use with caution!"`
+	Test         bool   `short:"t" long:"test" description:"Test mode. Sends commands to a simulated device."`
 }
 
 type serverCmd struct {
@@ -22,8 +23,15 @@ type serverCmd struct {
 	StaticDir string `short:"s" long:"static" description:"Path to directory containing static assets" value:"PATH"`
 }
 
+func newClient(device string, test bool) (nad.Client, error) {
+	if test {
+		return nad.NewTestClient(), nil
+	}
+	return nad.New(device)
+}
+
 func (s *serverCmd) Execute(args []string) error {
-	client, err := nad.New(s.Device)
+	client, err := newClient(s.Device, s.Test)
 	if err != nil {
 		return err
 	}
@@ -45,7 +53,7 @@ type sendCmd struct {
 }
 
 func (s *sendCmd) Execute(args []string) error {
-	client, err := nad.New(s.Device)
+	client, err := newClient(s.Device, s.Test)
 	if err != nil {
 		return err
 	}
