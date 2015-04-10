@@ -54,9 +54,9 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 	case "\rMain.Tape1=Off\r":
 		p.reply <- "\nMain.Tape1=Off\n"
 	case "\rMain.Volume+\r":
-		p.reply <- "\nMain.Volume=+\n"
+		p.reply <- "\nMain.Volume+\n"
 	case "\rMain.Volume-\r":
-		p.reply <- "\nMain.Volume=-\n"
+		p.reply <- "\nMain.Volume-\n"
 	default:
 		return 0, fmt.Errorf("unknown command: %q", cmd)
 	}

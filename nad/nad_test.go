@@ -173,7 +173,7 @@ func TestVolumeUp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Volume=+"; actual.String() != expected {
+	if expected := "Main.Volume+"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -184,7 +184,7 @@ func TestVolumeDown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Volume=-"; actual.String() != expected {
+	if expected := "Main.Volume-"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
