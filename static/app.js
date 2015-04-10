@@ -56,6 +56,12 @@ nad.controller = function() {
       'Value': value
     });
   };
+  ctrl.amp = function() {
+    nad.send(ctrl, {
+      'Variable': 'Model',
+      'Operator': '?'
+    });
+  };
 };
 
 nad.console = function(ctrl) {
@@ -97,6 +103,13 @@ nad.source = function(ctrl) {
   ]);
 };
 
+nad.amp = function(ctrl) {
+  return m('button[type=button]', {
+    class: 'btn btn-default',
+    onclick: ctrl.amp
+  }, 'Model');
+};
+
 nad.view = function(ctrl) {
   return m('div.container', [
     m('h1', 'NAD Remote'),
@@ -136,9 +149,10 @@ nad.view = function(ctrl) {
       ])
     ]),
     m('div.row', {class: 'top-spacing'}, [
-      m('div.col-md-4', [
-        nad.source(ctrl, {onclick: ctrl.source})
-      ])
+      m('div.col-md-4', [nad.source(ctrl)])
+    ]),
+    m('div.row', {class: 'top-spacing'}, [
+      m('div.col-md-2', {class: 'col-md-offset-2'}, [nad.amp(ctrl)])
     ])
   ]);
 };
