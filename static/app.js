@@ -7,37 +7,34 @@ nad.fmtCmd = function(data) {
 nad.send = function(ctrl, req) {
   m.request({method: 'POST', url: '/api/v1/nad', data: req})
     .then(function (data) {
-      ctrl.data = data;
-      return data;
-    })
-    .then(function (data) {
-      var msg = nad.fmtCmd(req);
-      var reply = nad.fmtCmd(data);
-      ctrl.command = {message: msg, reply: reply};
+      ctrl.model({message: nad.fmtCmd(req), reply: nad.fmtCmd(data)});
       return data;
     })
     .then(function (data) {
       if (data.Value === 'On' || data.Value === 'Off') {
-        ctrl.state[data.Variable] = data.Value === 'On';
+        var state = ctrl.state();
+        state[data.Variable] = data.Value === 'On';
+        ctrl.state(state);
       }
     });
 };
 
 nad.controller = function() {
   var ctrl = this;
-  ctrl.state = {};
+  ctrl.state = m.prop({});
+  ctrl.model = m.prop({});
   ctrl.power = function() {
     nad.send(ctrl, {
       'Variable': 'Power',
       'Operator': '=',
-      'Value': ctrl.state.Power ? 'Off' : 'On'
+      'Value': ctrl.state().Power ? 'Off' : 'On'
     });
   };
   ctrl.mute = function() {
     nad.send(ctrl, {
       'Variable': 'Mute',
       'Operator': '=',
-      'Value': ctrl.state.Mute ? 'Off' : 'On'
+      'Value': ctrl.state().Mute ? 'Off' : 'On'
     });
   };
   ctrl.volumeUp = function() {
@@ -63,30 +60,28 @@ nad.controller = function() {
 
 nad.console = function(ctrl) {
   var text;
-  if (ctrl.command) {
-      text = ['--> sent:     ' + ctrl.command.message,
-              '<-- received: ' + ctrl.command.reply];
+  if (Object.keys(ctrl.model()).length === 0) {
+    text = ['These go to eleven!'];
   } else {
-      text = ['These go to eleven!'];
+    text = ['sent:     ' + ctrl.model().message,
+            'received: ' + ctrl.model().reply];
   }
   return m('pre.console', text.join('\n'));
 };
 
 nad.onoff = function(ctrl, options) {
-  var isOn = !!ctrl.state[options.type];
+  var isOn = !!ctrl.state()[options.type];
   return m('button[type=button]', {
-    style: 'width: 100%',
     class: 'btn btn-default btn-lg' + (isOn ? ' active' : ''),
     onclick: options.onclick
-  }, [options.icon]);
+  }, options.icon);
 };
 
 nad.volume = function(ctrl, options) {
   return m('button[type=button]', {
-    style: 'width: 100%',
     class: 'btn btn-default btn-lg',
     onclick: options.onclick
-  }, [options.icon]);
+  }, options.icon);
 };
 
 nad.source = function(ctrl) {
@@ -115,36 +110,28 @@ nad.view = function(ctrl) {
         nad.onoff(ctrl, {
           onclick: ctrl.power,
           type: 'Power',
-          icon: m('span', {
-            class: 'glyphicon glyphicon-off', 'aria-hidden': true
-          })
+          icon: m('span', {class: 'glyphicon glyphicon-off'})
         })
       ]),
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.onoff(ctrl, {
           onclick: ctrl.mute,
           type: 'Mute',
-          icon: m('span', {
-            class: 'glyphicon glyphicon-volume-off', 'aria-hidden': true
-          })
+          icon: m('span', {class: 'glyphicon glyphicon-volume-off'})
         })
       ])
     ]),
     m('div.row', [
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.volume(ctrl, {
-          onclick: ctrl.volumeUp, type: '+',
-          icon: m('span', {
-            class: 'glyphicon glyphicon-volume-up', 'aria-hidden': true
-          })
+          onclick: ctrl.volumeUp,
+          icon: m('span', {class: 'glyphicon glyphicon-volume-up'})
         })
       ]),
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.volume(ctrl, {
-          onclick: ctrl.volumeDown, type: '-',
-          icon: m('span', {
-            class: 'glyphicon glyphicon-volume-down', 'aria-hidden': true
-          })
+          onclick: ctrl.volumeDown,
+          icon: m('span', {class: 'glyphicon glyphicon-volume-down'})
         })
       ])
     ]),
