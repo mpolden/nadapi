@@ -11,16 +11,18 @@ nad.send = function(ctrl, req) {
       if (data.Value === 'On' || data.Value === 'Off') {
         state[data.Variable] = data.Value === 'On';
       }
+      ctrl.error({});
       ctrl.model({
         message: nad.fmtCmd(req),
         reply: nad.fmtCmd(data),
         state: state
       });
-    })
+    }, ctrl.error);
 };
 
 nad.controller = function() {
   var ctrl = this;
+  ctrl.error = m.prop({});
   ctrl.model = m.prop({state: {}});
   ctrl.power = function() {
     nad.send(ctrl, {
@@ -109,9 +111,22 @@ nad.amp = function(ctrl) {
   }, 'Model');
 };
 
+nad.error = function(ctrl) {
+  var e = ctrl.error();
+  var isError = Object.keys(e).length !== 0;
+  var text = isError ? e.message + ' (' + e.status + ')' : '';
+  var cls = 'alert-danger' + (isError ? '' : ' hidden');
+  return m('div.alert',{class: cls, role: 'alert'}, [
+    m('strong', 'Error! '), text
+  ]);
+};
+
 nad.view = function(ctrl) {
   return m('div.container', [
     m('h1', 'NAD Remote'),
+    m('div.row', [
+      m('div.col-md-4', nad.error(ctrl))
+    ]),
     m('div.row', [
       m('div.col-md-4', [
         nad.console(ctrl)
