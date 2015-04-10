@@ -7,34 +7,33 @@ nad.fmtCmd = function(data) {
 nad.send = function(ctrl, req) {
   m.request({method: 'POST', url: '/api/v1/nad', data: req})
     .then(function (data) {
-      ctrl.model({message: nad.fmtCmd(req), reply: nad.fmtCmd(data)});
-      return data;
-    })
-    .then(function (data) {
+      var state = ctrl.model().state;
       if (data.Value === 'On' || data.Value === 'Off') {
-        var state = ctrl.state();
         state[data.Variable] = data.Value === 'On';
-        ctrl.state(state);
       }
-    });
+      ctrl.model({
+        message: nad.fmtCmd(req),
+        reply: nad.fmtCmd(data),
+        state: state
+      });
+    })
 };
 
 nad.controller = function() {
   var ctrl = this;
-  ctrl.state = m.prop({});
-  ctrl.model = m.prop({});
+  ctrl.model = m.prop({state: {}});
   ctrl.power = function() {
     nad.send(ctrl, {
       'Variable': 'Power',
       'Operator': '=',
-      'Value': ctrl.state().Power ? 'Off' : 'On'
+      'Value': ctrl.model().state.Power ? 'Off' : 'On'
     });
   };
   ctrl.mute = function() {
     nad.send(ctrl, {
       'Variable': 'Mute',
       'Operator': '=',
-      'Value': ctrl.state().Mute ? 'Off' : 'On'
+      'Value': ctrl.model().state.Mute ? 'Off' : 'On'
     });
   };
   ctrl.volumeUp = function() {
@@ -66,7 +65,7 @@ nad.controller = function() {
 
 nad.console = function(ctrl) {
   var text;
-  if (Object.keys(ctrl.model()).length === 0) {
+  if (Object.keys(ctrl.model()).length <= 1) {
     text = ['These go to eleven!'];
   } else {
     text = ['sent:     ' + ctrl.model().message,
@@ -76,7 +75,7 @@ nad.console = function(ctrl) {
 };
 
 nad.onoff = function(ctrl, options) {
-  var isOn = !!ctrl.state()[options.type];
+  var isOn = !!ctrl.model().state[options.type];
   return m('button[type=button]', {
     class: 'btn btn-default btn-lg' + (isOn ? ' active' : ''),
     onclick: options.onclick
