@@ -71,6 +71,12 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	reader := bufio.NewReader(n.port)
+	// Discard any unread data before sending command
+	if t, ok := n.port.(*term.Term); ok {
+		if err := t.Flush(); err != nil {
+			return nil, err
+		}
+	}
 	if _, err := n.port.Write(cmd); err != nil {
 		return nil, err
 	}
@@ -91,12 +97,6 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 	b, err := reader.ReadBytes('\n')
 	if err != nil {
 		return nil, err
-	}
-	// Discard data written but not transmitted, and data received but not read
-	if t, ok := n.port.(*term.Term); ok {
-		if err := t.Flush(); err != nil {
-			return nil, err
-		}
 	}
 	return b, nil
 }
