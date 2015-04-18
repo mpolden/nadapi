@@ -18,13 +18,8 @@ case "$TRAVIS_GO_VERSION" in
     1.1*)
         printf "go ${TRAVIS_GO_VERSION} doesn't support lint or vet\n"
         ;;
-    1.2*)
-        lint
-        # vet doesn't support -copylocks flag in 1.2
-        vet
-        ;;
     *)
         lint
-        vet -copylocks=false
+        vet
         ;;
 esac

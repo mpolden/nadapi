@@ -13,7 +13,7 @@ import (
 
 // API represents an API server.
 type API struct {
-	Client    nad.Client
+	Client    *nad.Client
 	StaticDir string
 }
 
@@ -64,7 +64,7 @@ func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interfa
 }
 
 // New returns an new API using client to communicate with an amplifier.
-func New(client nad.Client) API {
+func New(client *nad.Client) API {
 	return API{Client: client}
 }
 

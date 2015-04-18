@@ -17,7 +17,7 @@ type Client struct {
 }
 
 // New creates a new client to the amplifier, using device for communication.
-func New(device string) (Client, error) {
+func New(device string) (*Client, error) {
 	// From RS-232 Protocol for NAD Products v2.02:
 	//
 	// All communication should be done at a rate of 115200 bps with 8 data
@@ -25,9 +25,9 @@ func New(device string) (Client, error) {
 	// performed.
 	port, err := term.Open(device, term.Speed(115200), term.RawMode)
 	if err != nil {
-		return Client{}, err
+		return nil, err
 	}
-	return Client{port: port}, nil
+	return &Client{port: port}, nil
 }
 
 // Close closes the underlying device

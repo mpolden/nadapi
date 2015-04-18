@@ -64,8 +64,8 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 }
 
 // NewTestClient creates a client that communicates with a simulated amp.
-func NewTestClient() Client {
+func NewTestClient() *Client {
 	reply := make(chan string, 1)
 	port := &testPort{reply: reply}
-	return Client{port: port, EnableVolume: true}
+	return &Client{port: port, EnableVolume: true}
 }

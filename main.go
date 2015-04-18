@@ -23,7 +23,7 @@ type serverCmd struct {
 	StaticDir string `short:"s" long:"static" description:"Path to directory containing static assets" value:"PATH"`
 }
 
-func newClient(device string, test bool) (nad.Client, error) {
+func newClient(device string, test bool) (*nad.Client, error) {
 	if test {
 		return nad.NewTestClient(), nil
 	}
