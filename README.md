@@ -58,3 +58,10 @@ $ curl -d '{"variable": "model", "operator": "?"}' 'http://localhost:8666/api/v1
   "Value": "C356BEE"
 }
 ```
+
+## Frontend
+
+A basic webapp frontend is included in `static/`, and can be served by using the
+`-s` option of the `server` subcommand.
+
+![Screenshot 1](static/screenshot.png)
