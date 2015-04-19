@@ -8,9 +8,8 @@ nad.send = function(ctrl, req) {
   m.request({method: 'POST', url: '/api/v1/nad', data: req})
     .then(function (data) {
       var state = ctrl.model().state;
-      if (data.Value === 'On' || data.Value === 'Off') {
-        state[data.Variable] = data.Value === 'On';
-      }
+      state[data.Variable] = data.Value === 'On' || data.Value === 'Off' ?
+        data.Value === 'On' : data.Value;
       ctrl.error({});
       ctrl.model({
         message: nad.fmtCmd(req),
@@ -57,6 +56,12 @@ nad.controller = function() {
       'Value': value
     });
   };
+  ctrl.refreshSource = function() {
+    nad.send(ctrl, {
+      'Variable': 'Source',
+      'Operator': '?'
+    });
+  };
   ctrl.amp = function() {
     nad.send(ctrl, {
       'Variable': 'Model',
@@ -92,16 +97,22 @@ nad.volume = function(ctrl, options) {
 };
 
 nad.source = function(ctrl) {
+  var sources = ['CD', 'Tuner', 'Video', 'Disc/MDC', 'Tape2', 'Aux'];
+  var model = ctrl.model();
   return m('select.form-control', {
     onchange: m.withAttr('value', ctrl.source)
-  }, [
-    m('option[value=CD]', 'CD'),
-    m('option[value=TUNER]', 'Tuner'),
-    m('option[value=VIDEO]', 'Video'),
-    m('option[value=DISC/MDC]', 'Disc/MDC'),
-    m('option[value=TAPE2]', 'Tape2'),
-    m('option[value=AUX]', 'Aux')
-  ]);
+  }, sources.map(function(src) {
+    var val = src.toUpperCase();
+    var selected = model.state.Source === val ? 'selected' : '';
+    return m('option', {'value': val, 'selected': selected}, src);
+  }));
+};
+
+nad.refreshSource = function(ctrl, options) {
+  return m('button[type=button]', {
+    class: 'btn btn-default',
+    onclick: ctrl.refreshSource
+  }, options.icon);
 };
 
 nad.amp = function(ctrl) {
@@ -116,7 +127,7 @@ nad.error = function(ctrl) {
   var isError = Object.keys(e).length !== 0;
   var text = isError ? e.message + ' (' + e.status + ')' : '';
   var cls = 'alert-danger' + (isError ? '' : ' hidden');
-  return m('div.alert',{class: cls, role: 'alert'}, [
+  return m('div.alert', {class: cls, role: 'alert'}, [
     m('strong', 'Error! '), text
   ]);
 };
@@ -162,8 +173,13 @@ nad.view = function(ctrl) {
         })
       ])
     ]),
-    m('div.row', {class: 'top-spacing'}, [
-      m('div.col-md-4', [nad.source(ctrl)])
+    m('div.row', [
+      m('div.col-md-2', {class: 'top-spacing'}, nad.source(ctrl)),
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.refreshSource(ctrl, {
+          icon: m('span', {class: 'glyphicon glyphicon-refresh'})
+        })
+      ])
     ]),
     m('div.row', {class: 'top-spacing'}, [
       m('div.col-md-2', {class: 'col-md-offset-2'}, [nad.amp(ctrl)])

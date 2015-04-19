@@ -41,6 +41,8 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 		p.reply <- "\nMain.Source=TAPE2\n"
 	case "\rMain.Source=AUX\r":
 		p.reply <- "\nMain.Source=AUX\n"
+	case "\rMain.Source?\r":
+		p.reply <- "\nMain.Source=CD\n"
 	case "\rMain.SpeakerA=On\r":
 		p.reply <- "\nMain.SpeakerA=On\n"
 	case "\rMain.SpeakerA=Off\r":
