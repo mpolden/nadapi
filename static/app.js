@@ -134,7 +134,11 @@ nad.error = function(ctrl) {
 
 nad.view = function(ctrl) {
   return m('div.container', [
-    m('h1', 'NAD Remote'),
+    m('div.row', [
+      m('div.col-md-4', m('h1', [
+        m('span', {class: 'glyphicon glyphicon-signal'}), ' amp remote'
+      ]))
+    ]),
     m('div.row', [
       m('div.col-md-4', nad.error(ctrl))
     ]),
