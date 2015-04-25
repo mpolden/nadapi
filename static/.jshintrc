@@ -23,6 +23,7 @@
   "maxlen": 120,
   "browser": true,
   "globals": {
+    "_": true,
     "m": true
   }
 }
