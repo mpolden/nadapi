@@ -72,7 +72,7 @@ nad.controller = function() {
 
 nad.console = function(ctrl) {
   var text;
-  if (Object.keys(ctrl.model()).length <= 1) {
+  if (_.isEmpty(ctrl.model().state)) {
     text = ['These go to eleven!'];
   } else {
     text = ['sent:     ' + ctrl.model().message,
@@ -101,7 +101,7 @@ nad.source = function(ctrl) {
   var model = ctrl.model();
   return m('select.form-control', {
     onchange: m.withAttr('value', ctrl.source)
-  }, sources.map(function(src) {
+  }, _.map(sources, function(src) {
     var val = src.toUpperCase();
     var selected = model.state.Source === val ? 'selected' : '';
     return m('option', {'value': val, 'selected': selected}, src);
@@ -124,7 +124,7 @@ nad.amp = function(ctrl) {
 
 nad.error = function(ctrl) {
   var e = ctrl.error();
-  var isError = Object.keys(e).length !== 0;
+  var isError = !_.isEmpty(e);
   var text = isError ? e.message + ' (' + e.status + ')' : '';
   var cls = 'alert-danger' + (isError ? '' : ' hidden');
   return m('div.alert', {class: cls, role: 'alert'}, [
