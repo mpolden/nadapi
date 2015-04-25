@@ -68,6 +68,16 @@ nad.controller = function() {
       'Operator': '?'
     });
   };
+  ctrl.speakerA = function() {
+    // Assume that initial state is on
+    var spkrA = ctrl.model().state.SpeakerA;
+    var isOn = _.isUndefined(spkrA) ? true : spkrA;
+    nad.send(ctrl, {
+      'Variable': 'SpeakerA',
+      'Operator': '=',
+      'Value': isOn ? 'Off' : 'On'
+    });
+  };
 };
 
 nad.console = function(ctrl) {
@@ -82,9 +92,14 @@ nad.console = function(ctrl) {
 };
 
 nad.onoff = function(ctrl, options) {
-  var isOn = !!ctrl.model().state[options.type];
+  var state = ctrl.model().state[options.type];
+  var isOn = !!state;
+  if (_.isUndefined(state) && !_.isUndefined(options.initialState)) {
+    isOn = options.initialState;
+  }
+  var active = options.invert ? !isOn : isOn;
   return m('button[type=button]', {
-    class: 'btn btn-default btn-lg' + (isOn ? ' active' : ''),
+    class: 'btn btn-default btn-lg' + (active ? ' active' : ''),
     onclick: options.onclick
   }, options.icon);
 };
@@ -115,11 +130,11 @@ nad.refreshSource = function(ctrl, options) {
   }, options.icon);
 };
 
-nad.amp = function(ctrl) {
+nad.amp = function(ctrl, options) {
   return m('button[type=button]', {
-    class: 'btn btn-default',
+    class: 'btn btn-default btn-lg',
     onclick: ctrl.amp
-  }, 'Model');
+  }, options.icon);
 };
 
 nad.error = function(ctrl) {
@@ -178,15 +193,28 @@ nad.view = function(ctrl) {
       ])
     ]),
     m('div.row', [
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.onoff(ctrl, {
+          onclick: ctrl.speakerA,
+          type: 'SpeakerA',
+          icon: m('span', {class: 'glyphicon glyphicon-headphones'}),
+          initialState: true,
+          invert: true
+        })
+      ]),
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.amp(ctrl, {
+          icon: m('span', {class: 'glyphicon glyphicon-info-sign'})
+        })
+      ])
+    ]),
+    m('div.row', [
       m('div.col-md-2', {class: 'top-spacing'}, nad.source(ctrl)),
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.refreshSource(ctrl, {
           icon: m('span', {class: 'glyphicon glyphicon-refresh'})
         })
       ])
-    ]),
-    m('div.row', {class: 'top-spacing'}, [
-      m('div.col-md-2', {class: 'col-md-offset-2'}, [nad.amp(ctrl)])
     ])
   ]);
 };
