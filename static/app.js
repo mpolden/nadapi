@@ -1,5 +1,14 @@
 var nad = nad || {};
 
+nad.bindKeys = function(ctrl) {
+  Mousetrap.bind('p', ctrl.power);
+  Mousetrap.bind('m', ctrl.mute);
+  Mousetrap.bind('s', ctrl.speakerA);
+  Mousetrap.bind('i', ctrl.amp);
+  Mousetrap.bind('+', ctrl.volumeUp);
+  Mousetrap.bind('-', ctrl.volumeDown);
+};
+
 nad.fmtCmd = function(data) {
   return 'Main.' + [data.Variable, data.Value].join(data.Operator);
 };
@@ -78,6 +87,7 @@ nad.controller = function() {
       'Value': isOn ? 'Off' : 'On'
     });
   };
+  nad.bindKeys(ctrl);
 };
 
 nad.console = function(ctrl) {

@@ -24,6 +24,7 @@
   "browser": true,
   "globals": {
     "_": true,
-    "m": true
+    "m": true,
+    "Mousetrap": true
   }
 }
