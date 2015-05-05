@@ -229,4 +229,4 @@ nad.view = function(ctrl) {
   ]);
 };
 
-m.module(document.getElementById('nad-remote'), nad);
+m.mount(document.getElementById('nad-remote'), nad);
