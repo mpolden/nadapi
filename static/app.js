@@ -1,13 +1,21 @@
 var nad = nad || {};
 
 nad.bindKeys = function(ctrl) {
-  Mousetrap.bind('p', ctrl.power);
-  Mousetrap.bind('m', ctrl.mute);
-  Mousetrap.bind('s', ctrl.speakerA);
-  Mousetrap.bind('i', ctrl.amp);
-  Mousetrap.bind('+', ctrl.volumeUp);
-  Mousetrap.bind('-', ctrl.volumeDown);
+  nad.keyBindings.forEach(function (kb) {
+    Mousetrap.bind(kb.key, ctrl[kb.callback]);
+  });
 };
+
+nad.keyBindings = [
+  {'key': 'p', 'callback': 'power', 'description': 'Toggle power'},
+  {'key': 'm', 'callback': 'mute', 'description': 'Toggle mute'},
+  {'key': 's', 'callback': 'speakerA', 'description': 'Toggle headphones'},
+  {'key': 'i', 'callback': 'amp', 'description': 'Get amplifier model'},
+  {'key': '+', 'callback': 'volumeUp', 'description': 'Increase volume'},
+  {'key': '-', 'callback': 'volumeDown', 'description': 'Decrease volume'},
+  {'key': 'h', 'callback': 'showHelp',
+   'description': 'Togge list of keyboard shortcuts'}
+];
 
 nad.fmtCmd = function(data) {
   return 'Main.' + [data.Variable, data.Value].join(data.Operator);
@@ -32,6 +40,7 @@ nad.controller = function() {
   var ctrl = this;
   ctrl.error = m.prop({});
   ctrl.model = m.prop({state: {}});
+  ctrl.helpVisible = m.prop(false);
   ctrl.power = function() {
     nad.send(ctrl, {
       'Variable': 'Power',
@@ -86,6 +95,12 @@ nad.controller = function() {
       'Operator': '=',
       'Value': isOn ? 'Off' : 'On'
     });
+  };
+  ctrl.showHelp = function() {
+    var visible = ctrl.helpVisible();
+    m.startComputation();
+    ctrl.helpVisible(!visible);
+    m.endComputation();
   };
   nad.bindKeys(ctrl);
 };
@@ -157,6 +172,26 @@ nad.error = function(ctrl) {
   ]);
 };
 
+nad.help = function(ctrl) {
+  if (!ctrl.helpVisible()) {
+    return m('p.text-muted', 'Tip: Press ', m('code', 'h'),
+             ' to display keyboard shortcuts');
+  }
+  var rows = nad.keyBindings.map(function (kb) {
+    return m('tr', [
+      m('td', m('center', m('code', kb.key))),
+      m('td', kb.description)
+    ]);
+  });
+  return m('table.table',
+           m('thead', m('tr', [
+             m('th', 'Key binding'),
+             m('th', 'Description')
+           ])),
+           m('tbody', rows)
+          );
+};
+
 nad.view = function(ctrl) {
   return m('div.container', [
     m('div.row', [
@@ -225,7 +260,8 @@ nad.view = function(ctrl) {
           icon: m('span', {class: 'glyphicon glyphicon-refresh'})
         })
       ])
-    ])
+    ]),
+    m('div.row', {class: 'top-spacing'}, m('div.col-md-4', nad.help(ctrl)))
   ]);
 };
 
