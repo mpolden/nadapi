@@ -21,12 +21,23 @@ nad.fmtCmd = function(data) {
   return 'Main.' + [data.Variable, data.Value].join(data.Operator);
 };
 
+nad.fromValue = function(v) {
+  return v === 'On' || v === 'Off' ? v === 'On' : v;
+}
+
+nad.toValue = function(v) {
+  if (_.isBoolean(v)) {
+    return v ? 'On' : 'Off';
+  }
+  return v;
+}
+
 nad.send = function(ctrl, req) {
+  req.Value = nad.toValue(req.Value);
   m.request({method: 'POST', url: '/api/v1/nad', data: req})
     .then(function (data) {
       var state = ctrl.model().state;
-      state[data.Variable] = data.Value === 'On' || data.Value === 'Off' ?
-        data.Value === 'On' : data.Value;
+      state[data.Variable] = nad.fromValue(data.Value);
       ctrl.error({});
       ctrl.model({
         message: {request: req, reply: data},
@@ -47,14 +58,14 @@ nad.controller = function() {
     nad.send(ctrl, {
       Variable: 'Power',
       Operator: '=',
-      Value: ctrl.model().state.Power ? 'Off' : 'On'
+      Value: !ctrl.model().state.Power
     });
   };
   ctrl.mute = function() {
     nad.send(ctrl, {
       Variable: 'Mute',
       Operator: '=',
-      Value: ctrl.model().state.Mute ? 'Off' : 'On'
+      Value: !ctrl.model().state.Mute
     });
   };
   ctrl.volumeUp = function() {
@@ -89,11 +100,10 @@ nad.controller = function() {
     });
   };
   ctrl.speakerA = function() {
-    var isOn = ctrl.model().state.SpeakerA;
     nad.send(ctrl, {
       Variable: 'SpeakerA',
       Operator: '=',
-      Value: isOn ? 'Off' : 'On'
+      Value: !ctrl.model().state.SpeakerA
     });
   };
   ctrl.showHelp = function() {
