@@ -29,9 +29,8 @@ nad.send = function(ctrl, req) {
         data.Value === 'On' : data.Value;
       ctrl.error({});
       ctrl.model({
-        message: nad.fmtCmd(req),
-        reply: nad.fmtCmd(data),
-        state: state
+        message: {request: req, reply: data},
+        state: state,
       });
     }, ctrl.error);
 };
@@ -39,7 +38,10 @@ nad.send = function(ctrl, req) {
 nad.controller = function() {
   var ctrl = this;
   ctrl.error = m.prop({});
-  ctrl.model = m.prop({state: {}});
+  ctrl.model = m.prop({
+    state: {Power: false, Mute: false, SpeakerA: true},
+    message: {}
+  });
   ctrl.helpVisible = m.prop(false);
   ctrl.power = function() {
     nad.send(ctrl, {
@@ -87,9 +89,7 @@ nad.controller = function() {
     });
   };
   ctrl.speakerA = function() {
-    // Assume that initial state is on
-    var spkrA = ctrl.model().state.SpeakerA;
-    var isOn = _.isUndefined(spkrA) ? true : spkrA;
+    var isOn = ctrl.model().state.SpeakerA;
     nad.send(ctrl, {
       Variable: 'SpeakerA',
       Operator: '=',
@@ -107,21 +107,21 @@ nad.controller = function() {
 
 nad.console = function(ctrl) {
   var text;
-  if (_.isEmpty(ctrl.model().state)) {
+  if (_.isEmpty(ctrl.model().message)) {
     text = ['These go to eleven!'];
   } else {
-    text = ['sent:     ' + ctrl.model().message,
-            'received: ' + ctrl.model().reply];
+    text = ['sent:     ' + nad.fmtCmd(ctrl.model().message.request),
+            'received: ' + nad.fmtCmd(ctrl.model().message.reply)];
   }
   return m('pre.console', text.join('\n'));
 };
 
 nad.onoff = function(ctrl, options) {
-  var state = ctrl.model().state[options.type];
-  var isOn = !!state;
-  if (_.isUndefined(state) && !_.isUndefined(options.initialState)) {
-    isOn = options.initialState;
+  var state = ctrl.model().state;
+  if (!_.has(state, options.type)) {
+    throw 'Unknown type: ' + options.type;
   }
+  var isOn = state[options.type];
   var active = options.invert ? !isOn : isOn;
   return m('button[type=button]', {
     class: 'btn btn-default btn-lg' + (active ? ' active' : ''),
@@ -243,7 +243,6 @@ nad.view = function(ctrl) {
           onclick: ctrl.speakerA,
           type: 'SpeakerA',
           icon: m('span', {class: 'glyphicon glyphicon-headphones'}),
-          initialState: true,
           invert: true
         })
       ]),
