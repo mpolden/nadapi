@@ -7,14 +7,14 @@ nad.bindKeys = function(ctrl) {
 };
 
 nad.keyBindings = [
-  {'key': 'p', 'callback': 'power', 'description': 'Toggle power'},
-  {'key': 'm', 'callback': 'mute', 'description': 'Toggle mute'},
-  {'key': 's', 'callback': 'speakerA', 'description': 'Toggle headphones'},
-  {'key': 'i', 'callback': 'amp', 'description': 'Get amplifier model'},
-  {'key': '+', 'callback': 'volumeUp', 'description': 'Increase volume'},
-  {'key': '-', 'callback': 'volumeDown', 'description': 'Decrease volume'},
-  {'key': 'h', 'callback': 'showHelp',
-   'description': 'Togge list of keyboard shortcuts'}
+  {key: 'p', callback: 'power', description: 'Toggle power'},
+  {key: 'm', callback: 'mute', description: 'Toggle mute'},
+  {key: 's', callback: 'speakerA', description: 'Toggle headphones'},
+  {key: 'i', callback: 'amp', description: 'Get amplifier model'},
+  {key: '+', callback: 'volumeUp', description: 'Increase volume'},
+  {key: '-', callback: 'volumeDown', description: 'Decrease volume'},
+  {key: 'h', callback: 'showHelp',
+   description: 'Togge list of keyboard shortcuts'}
 ];
 
 nad.fmtCmd = function(data) {
@@ -43,47 +43,47 @@ nad.controller = function() {
   ctrl.helpVisible = m.prop(false);
   ctrl.power = function() {
     nad.send(ctrl, {
-      'Variable': 'Power',
-      'Operator': '=',
-      'Value': ctrl.model().state.Power ? 'Off' : 'On'
+      Variable: 'Power',
+      Operator: '=',
+      Value: ctrl.model().state.Power ? 'Off' : 'On'
     });
   };
   ctrl.mute = function() {
     nad.send(ctrl, {
-      'Variable': 'Mute',
-      'Operator': '=',
-      'Value': ctrl.model().state.Mute ? 'Off' : 'On'
+      Variable: 'Mute',
+      Operator: '=',
+      Value: ctrl.model().state.Mute ? 'Off' : 'On'
     });
   };
   ctrl.volumeUp = function() {
     nad.send(ctrl, {
-      'Variable': 'Volume',
-      'Operator': '+',
+      Variable: 'Volume',
+      Operator: '+',
     });
   };
   ctrl.volumeDown = function() {
     nad.send(ctrl, {
-      'Variable': 'Volume',
-      'Operator': '-',
+      Variable: 'Volume',
+      Operator: '-',
     });
   };
   ctrl.source = function(value) {
     nad.send(ctrl, {
-      'Variable': 'Source',
-      'Operator': '=',
-      'Value': value
+      Variable: 'Source',
+      Operator: '=',
+      Value: value
     });
   };
   ctrl.refreshSource = function() {
     nad.send(ctrl, {
-      'Variable': 'Source',
-      'Operator': '?'
+      Variable: 'Source',
+      Operator: '?'
     });
   };
   ctrl.amp = function() {
     nad.send(ctrl, {
-      'Variable': 'Model',
-      'Operator': '?'
+      Variable: 'Model',
+      Operator: '?'
     });
   };
   ctrl.speakerA = function() {
@@ -91,9 +91,9 @@ nad.controller = function() {
     var spkrA = ctrl.model().state.SpeakerA;
     var isOn = _.isUndefined(spkrA) ? true : spkrA;
     nad.send(ctrl, {
-      'Variable': 'SpeakerA',
-      'Operator': '=',
-      'Value': isOn ? 'Off' : 'On'
+      Variable: 'SpeakerA',
+      Operator: '=',
+      Value: isOn ? 'Off' : 'On'
     });
   };
   ctrl.showHelp = function() {
@@ -144,7 +144,7 @@ nad.source = function(ctrl) {
   }, _.map(sources, function(src) {
     var val = src.toUpperCase();
     var selected = model.state.Source === val ? 'selected' : '';
-    return m('option', {'value': val, 'selected': selected}, src);
+    return m('option', {value: val, selected: selected}, src);
   }));
 };
 
