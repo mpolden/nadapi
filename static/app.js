@@ -1,7 +1,7 @@
 var nad = nad || {};
 
 nad.bindKeys = function(ctrl) {
-  nad.keyBindings.forEach(function (kb) {
+  _.each(nad.keyBindings, function (kb) {
     Mousetrap.bind(kb.key, ctrl[kb.callback]);
   });
 };
@@ -177,7 +177,7 @@ nad.help = function(ctrl) {
     return m('p.text-muted', 'Tip: Press ', m('code', 'h'),
              ' to display keyboard shortcuts');
   }
-  var rows = nad.keyBindings.map(function (kb) {
+  var rows = _.map(nad.keyBindings, function (kb) {
     return m('tr', [
       m('td', m('center', m('code', kb.key))),
       m('td', kb.description)
@@ -261,7 +261,7 @@ nad.view = function(ctrl) {
         })
       ])
     ]),
-    m('div.row', {class: 'top-spacing'}, m('div.col-md-4', nad.help(ctrl)))
+    m('div.row', m('div.col-md-4', {class: 'top-spacing'}, nad.help(ctrl)))
   ]);
 };
 
