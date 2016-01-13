@@ -17,20 +17,35 @@ nad.keyBindings = [
    description: 'Togge list of keyboard shortcuts'}
 ];
 
+nad.initState = function(ctrl) {
+  nad.get(ctrl, 'Power');
+  nad.get(ctrl, 'Source');
+  nad.get(ctrl, 'SpeakerA');
+};
+
 nad.fmtCmd = function(data) {
   return 'Main.' + [data.Variable, data.Value].join(data.Operator);
 };
 
 nad.fromValue = function(v) {
   return v === 'On' || v === 'Off' ? v === 'On' : v;
-}
+};
 
 nad.toValue = function(v) {
   if (_.isBoolean(v)) {
     return v ? 'On' : 'Off';
   }
   return v;
-}
+};
+
+nad.get = function(ctrl, variable) {
+  m.request({method: 'GET', url: '/api/v1/nad/state/' + variable})
+    .then(function (data) {
+      var state = ctrl.model().state;
+      state[data.Variable] = nad.fromValue(data.Value);
+      ctrl.model({state: state});
+    }, ctrl.error);
+};
 
 nad.send = function(ctrl, req) {
   req.Value = nad.toValue(req.Value);
@@ -113,6 +128,7 @@ nad.controller = function() {
     m.endComputation();
   };
   nad.bindKeys(ctrl);
+  nad.initState(ctrl);
 };
 
 nad.console = function(ctrl) {
