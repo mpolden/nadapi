@@ -29,6 +29,8 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 		p.reply <- "\n\n\nMain.Power=On\n"
 	case "\rMain.Power=Off\r":
 		p.reply <- "\nMain.Power=Off\n"
+	case "\rMain.Power?\r":
+		p.reply <- "\nMain.Power=On\n"
 	case "\rMain.Source=CD\r":
 		p.reply <- "\nMain.Source=CD\n"
 	case "\rMain.Source=TUNER\r":
@@ -47,6 +49,8 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 		p.reply <- "\nMain.SpeakerA=On\n"
 	case "\rMain.SpeakerA=Off\r":
 		p.reply <- "\nMain.SpeakerA=Off\n"
+	case "\rMain.SpeakerA?\r":
+		p.reply <- "\nMain.SpeakerA=On\n"
 	case "\rMain.SpeakerB=On\r":
 		p.reply <- "\nMain.SpeakerB=On\n"
 	case "\rMain.SpeakerB=Off\r":

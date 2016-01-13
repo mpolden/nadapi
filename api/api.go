@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/martinp/nadapi/nad"
@@ -14,6 +15,8 @@ import (
 type API struct {
 	Client    *nad.Client
 	StaticDir string
+	cache     map[string]nad.Cmd
+	mu        sync.RWMutex
 }
 
 // Error represents an error in the API, which is returned to the user.
@@ -21,6 +24,19 @@ type Error struct {
 	err     error
 	Status  int    `json:"status"`
 	Message string `json:"message"`
+}
+
+func (a *API) cacheSet(cmd nad.Cmd) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.cache[cmd.Variable] = cmd
+}
+
+func (a *API) cacheGet(k string) (nad.Cmd, bool) {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	v, ok := a.cache[k]
+	return v, ok
 }
 
 // DeviceHandler is the handler which handles communication with an amplifier.
@@ -43,6 +59,35 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 			Message: "Failed to send command to amplifier",
 		}
 	}
+	// Update cached value
+	a.cacheSet(reply)
+	return reply, nil
+}
+
+// StateHandler handles queries for the amplifiers state
+func (a *API) StateHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
+	vars := mux.Vars(req)
+	v, ok := vars["variable"]
+	if !ok {
+		return nil, &Error{
+			Status:  http.StatusBadRequest,
+			Message: "Missing required parameter: variable",
+		}
+	}
+	// Return cached value if it exists
+	if reply, ok := a.cacheGet(v); ok {
+		return reply, nil
+	}
+	// Send command and cache result
+	reply, err := a.Client.SendCmd(nad.Cmd{Variable: v, Operator: "?"})
+	if err != nil {
+		return nil, &Error{
+			err:     err,
+			Status:  http.StatusInternalServerError,
+			Message: "Failed to send command to amplifier",
+		}
+	}
+	a.cacheSet(reply)
 	return reply, nil
 }
 
@@ -56,8 +101,8 @@ func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interfa
 }
 
 // New returns an new API using client to communicate with an amplifier.
-func New(client *nad.Client) API {
-	return API{Client: client}
+func New(client *nad.Client) *API {
+	return &API{Client: client, cache: make(map[string]nad.Cmd)}
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) (interface{}, *Error)
@@ -97,6 +142,7 @@ func requestFilter(next http.Handler) http.Handler {
 func (a *API) ListenAndServe(addr string) error {
 	r := mux.NewRouter()
 	r.Handle("/api/v1/nad", appHandler(a.DeviceHandler))
+	r.Handle("/api/v1/nad/state/{variable}", appHandler(a.StateHandler))
 	r.NotFoundHandler = appHandler(a.NotFoundHandler)
 	if a.StaticDir != "" {
 		fs := http.StripPrefix("/static/", http.FileServer(http.Dir(a.StaticDir)))
