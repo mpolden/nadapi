@@ -19,6 +19,7 @@ nad.keyBindings = [
 
 nad.initState = function(ctrl) {
   nad.get(ctrl, 'Power');
+  nad.get(ctrl, 'Mute');
   nad.get(ctrl, 'Source');
   nad.get(ctrl, 'SpeakerA');
 };
@@ -102,12 +103,6 @@ nad.controller = function() {
       Value: value
     });
   };
-  ctrl.refreshSource = function() {
-    nad.send(ctrl, {
-      Variable: 'Source',
-      Operator: '?'
-    });
-  };
   ctrl.amp = function() {
     nad.send(ctrl, {
       Variable: 'Model',
@@ -172,13 +167,6 @@ nad.source = function(ctrl) {
     var selected = model.state.Source === val ? 'selected' : '';
     return m('option', {value: val, selected: selected}, src);
   }));
-};
-
-nad.refreshSource = function(ctrl, options) {
-  return m('button[type=button]', {
-    class: 'btn btn-default',
-    onclick: ctrl.refreshSource
-  }, options.icon);
 };
 
 nad.amp = function(ctrl, options) {
@@ -279,12 +267,7 @@ nad.view = function(ctrl) {
       ])
     ]),
     m('div.row', [
-      m('div.col-md-2', {class: 'top-spacing'}, nad.source(ctrl)),
-      m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.refreshSource(ctrl, {
-          icon: m('span', {class: 'glyphicon glyphicon-refresh'})
-        })
-      ])
+      m('div.col-md-4', {class: 'top-spacing'}, nad.source(ctrl))
     ]),
     m('div.row', m('div.col-md-4', {class: 'top-spacing'}, nad.help(ctrl)))
   ]);
