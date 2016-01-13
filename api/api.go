@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/martinp/nadapi/nad"
 )
@@ -22,13 +21,6 @@ type Error struct {
 	err     error
 	Status  int    `json:"status"`
 	Message string `json:"message"`
-}
-
-func marshal(data interface{}, indent bool) ([]byte, error) {
-	if indent {
-		return json.MarshalIndent(data, "", "  ")
-	}
-	return json.Marshal(data)
 }
 
 // DeviceHandler is the handler which handles communication with an amplifier.
@@ -76,28 +68,24 @@ func (fn appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if e.err != nil {
 			log.Print(e.err)
 		}
-		jsonBlob, err := marshal(e, true)
+		out, err := json.Marshal(e)
 		if err != nil {
-			// Should never happen
 			panic(err)
 		}
 		w.WriteHeader(e.Status)
-		w.Write(jsonBlob)
+		w.Write(out)
 	} else {
-		indent := context.Get(r, "indent").(bool)
-		jsonBlob, err := marshal(data, indent)
+		out, err := json.Marshal(data)
 		if err != nil {
 			panic(err)
 		}
-		w.Write(jsonBlob)
+		w.Write(out)
 	}
 }
 
 func requestFilter(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/api/") {
-			_, indent := r.URL.Query()["pretty"]
-			context.Set(r, "indent", indent)
 			w.Header().Set("Content-Type", "application/json")
 		}
 		next.ServeHTTP(w, r)
