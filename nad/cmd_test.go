@@ -15,7 +15,7 @@ func TestCmdString(t *testing.T) {
 
 func TestCmdDelimited(t *testing.T) {
 	cmd := Cmd{Variable: "Power", Operator: "=", Value: "On"}
-	expected := "\rMain.Power=On\r"
+	expected := "\nMain.Power=On\n"
 	actual := cmd.Delimited()
 	if actual != expected {
 		t.Fatalf("Expected %q, got %q", expected, actual)

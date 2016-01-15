@@ -50,7 +50,7 @@ func (c *Cmd) String() string {
 
 // Delimited formats command before sending it to amplifier.
 func (c *Cmd) Delimited() string {
-	return fmt.Sprint("\r", c.String(), "\r")
+	return fmt.Sprint("\n", c.String(), "\n")
 }
 
 // Valid returns true if command is a command accepted by amplifier.
