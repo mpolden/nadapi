@@ -36,16 +36,24 @@ var commands = [...]string{
 	"Main.Volume-",
 }
 
-// Cmd represents a command sent to (or received from) amplifier.
+// Cmd represents a command sent to the amplifier.
 type Cmd struct {
 	Variable string
 	Operator string
 	Value    string
 }
 
+// Reply represents an reply received from the amplifier. A reply has the same fields as a command.
+type Reply struct{ Cmd }
+
 // String formats command as a string.
 func (c *Cmd) String() string {
 	return fmt.Sprint(prefix, ".", c.Variable, c.Operator, c.Value)
+}
+
+// Bytes returns a command as bytes.
+func (c *Cmd) Bytes() []byte {
+	return []byte(c.Delimited())
 }
 
 // Delimited formats command before sending it to amplifier.
@@ -80,6 +88,15 @@ func ParseCmd(s string) (Cmd, error) {
 		Operator: m[0][2],
 		Value:    m[0][3],
 	}, nil
+}
+
+// ParseReply parses b into a reply.
+func ParseReply(b []byte) (Reply, error) {
+	cmd, err := ParseCmd(string(b))
+	if err != nil {
+		return Reply{}, err
+	}
+	return Reply{cmd}, nil
 }
 
 // Cmds returns all valid commands.

@@ -15,7 +15,7 @@ import (
 type API struct {
 	Client    *nad.Client
 	StaticDir string
-	cache     map[string]nad.Cmd
+	cache     map[string]nad.Reply
 	mu        sync.RWMutex
 }
 
@@ -26,13 +26,13 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-func (a *API) cacheSet(cmd nad.Cmd) {
+func (a *API) cacheSet(r nad.Reply) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.cache[cmd.Variable] = cmd
+	a.cache[r.Variable] = r
 }
 
-func (a *API) cacheGet(k string) (nad.Cmd, bool) {
+func (a *API) cacheGet(k string) (nad.Reply, bool) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 	v, ok := a.cache[k]
@@ -102,7 +102,7 @@ func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interfa
 
 // New returns an new API using client to communicate with an amplifier.
 func New(client *nad.Client) *API {
-	return &API{Client: client, cache: make(map[string]nad.Cmd)}
+	return &API{Client: client, cache: make(map[string]nad.Reply)}
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) (interface{}, *Error)

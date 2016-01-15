@@ -36,21 +36,21 @@ func (n *Client) Close() error {
 }
 
 // SendCmd validates and sends the command cmd to the amplifier.
-func (n *Client) SendCmd(cmd Cmd) (Cmd, error) {
+func (n *Client) SendCmd(cmd Cmd) (Reply, error) {
 	// Check if volume adjustment is explicitly enabled. This check is done
 	// because incorrect volume adjust might damage your amp, speakers
 	// and/or cat.
 	if cmd.Variable == "Volume" && !n.EnableVolume {
-		return Cmd{}, fmt.Errorf("volume adjustment is not enabled")
+		return Reply{}, fmt.Errorf("volume adjustment is not enabled")
 	}
 	if !cmd.Valid() {
-		return Cmd{}, fmt.Errorf("invalid command: %s", cmd.String())
+		return Reply{}, fmt.Errorf("invalid command: %s", cmd.String())
 	}
-	b, err := n.Send([]byte(cmd.Delimited()))
+	b, err := n.Send(cmd.Bytes())
 	if err != nil {
-		return Cmd{}, err
+		return Reply{}, err
 	}
-	return ParseCmd(string(b))
+	return ParseReply(b)
 }
 
 // SendString parses, validates and sends the command s.
@@ -102,12 +102,12 @@ func (n *Client) Send(cmd []byte) ([]byte, error) {
 }
 
 // Model retrieves the amplifier model.
-func (n *Client) Model() (Cmd, error) {
+func (n *Client) Model() (Reply, error) {
 	cmd := Cmd{Variable: "Model", Operator: "?"}
 	return n.SendCmd(cmd)
 }
 
-func (n *Client) enable(variable string, enable bool) (Cmd, error) {
+func (n *Client) enable(variable string, enable bool) (Reply, error) {
 	cmd := Cmd{Variable: variable, Operator: "="}
 	if enable {
 		cmd.Value = "On"
@@ -118,44 +118,44 @@ func (n *Client) enable(variable string, enable bool) (Cmd, error) {
 }
 
 // Mute mutes the amplifier.
-func (n *Client) Mute(enable bool) (Cmd, error) {
+func (n *Client) Mute(enable bool) (Reply, error) {
 	return n.enable("Mute", enable)
 }
 
 // Power turns the amplifier on/off.
-func (n *Client) Power(enable bool) (Cmd, error) {
+func (n *Client) Power(enable bool) (Reply, error) {
 	return n.enable("Power", enable)
 }
 
 // SpeakerA enables/disables output to speaker A.
-func (n *Client) SpeakerA(enable bool) (Cmd, error) {
+func (n *Client) SpeakerA(enable bool) (Reply, error) {
 	return n.enable("SpeakerA", enable)
 }
 
 // SpeakerB enables/disables output to speaker B.
-func (n *Client) SpeakerB(enable bool) (Cmd, error) {
+func (n *Client) SpeakerB(enable bool) (Reply, error) {
 	return n.enable("SpeakerB", enable)
 }
 
 // Tape1 enables/disables output to tape 1.
-func (n *Client) Tape1(enable bool) (Cmd, error) {
+func (n *Client) Tape1(enable bool) (Reply, error) {
 	return n.enable("Tape1", enable)
 }
 
 // Source sets the current audio source, specified by src
-func (n *Client) Source(src string) (Cmd, error) {
+func (n *Client) Source(src string) (Reply, error) {
 	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(src)}
 	return n.SendCmd(cmd)
 }
 
 // VolumeUp increases volume.
-func (n *Client) VolumeUp() (Cmd, error) {
+func (n *Client) VolumeUp() (Reply, error) {
 	cmd := Cmd{Variable: "Volume", Operator: "+"}
 	return n.SendCmd(cmd)
 }
 
 // VolumeDown decreases volume.
-func (n *Client) VolumeDown() (Cmd, error) {
+func (n *Client) VolumeDown() (Reply, error) {
 	cmd := Cmd{Variable: "Volume", Operator: "-"}
 	return n.SendCmd(cmd)
 }
