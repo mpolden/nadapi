@@ -20,7 +20,7 @@ type opts struct {
 type serverCmd struct {
 	opts
 	Listen    string `short:"l" long:"listen" description:"Listen address" value-name:"ADDR" default:":8080"`
-	StaticDir string `short:"s" long:"static" description:"Path to directory containing static assets" value:"PATH"`
+	StaticDir string `short:"s" long:"static" description:"Path to directory containing static assets" value-name:"DIR"`
 }
 
 func newClient(device string, test bool) (*nad.Client, error) {
