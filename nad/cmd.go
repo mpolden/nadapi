@@ -8,33 +8,39 @@ import (
 
 const prefix = "Main"
 
-var commands = [...]string{
-	"Main.Model?",
-	"Main.Mute?",
-	"Main.Mute=On",
-	"Main.Mute=Off",
-	"Main.Power?",
-	"Main.Power=On",
-	"Main.Power=Off",
-	"Main.Source?",
-	"Main.Source=CD",
-	"Main.Source=TUNER",
-	"Main.Source=VIDEO",
-	"Main.Source=DISC/MDC",
-	"Main.Source=TAPE2",
-	"Main.Source=AUX",
-	"Main.SpeakerA?",
-	"Main.SpeakerA=On",
-	"Main.SpeakerA=Off",
-	"Main.SpeakerB?",
-	"Main.SpeakerB=On",
-	"Main.SpeakerB=Off",
-	"Main.Tape1?",
-	"Main.Tape1=On",
-	"Main.Tape1=Off",
-	"Main.Volume+",
-	"Main.Volume-",
-}
+var (
+	commands = [...]string{
+		"Main.Model?",
+		"Main.Mute?",
+		"Main.Mute=On",
+		"Main.Mute=Off",
+		"Main.Power?",
+		"Main.Power=On",
+		"Main.Power=Off",
+		"Main.Source?",
+		"Main.Source=CD",
+		"Main.Source=TUNER",
+		"Main.Source=VIDEO",
+		"Main.Source=DISC/MDC",
+		"Main.Source=TAPE2",
+		"Main.Source=AUX",
+		"Main.SpeakerA?",
+		"Main.SpeakerA=On",
+		"Main.SpeakerA=Off",
+		"Main.SpeakerB?",
+		"Main.SpeakerB=On",
+		"Main.SpeakerB=Off",
+		"Main.Tape1?",
+		"Main.Tape1=On",
+		"Main.Tape1=Off",
+		"Main.Volume+",
+		"Main.Volume-",
+	}
+	cmdPattern = regexp.MustCompile("(?iU)^" + prefix + "\\." +
+		"(.+)" +
+		"([=+?-])" +
+		"(.*)$")
+)
 
 // Cmd represents a command sent to the amplifier.
 type Cmd struct {
@@ -75,11 +81,7 @@ func (c *Cmd) Valid() bool {
 // ParseCmd parses s into a command.
 func ParseCmd(s string) (Cmd, error) {
 	s = strings.Trim(s, "\r\n")
-	re := regexp.MustCompile("(?iU)^" + prefix + "\\." +
-		"(.+)" +
-		"([=+?-])" +
-		"(.*)$")
-	m := re.FindAllStringSubmatch(s, -1)
+	m := cmdPattern.FindAllStringSubmatch(s, -1)
 	if len(m) == 0 || len(m[0]) < 4 {
 		return Cmd{}, fmt.Errorf("could not parse command: %q", s)
 	}
