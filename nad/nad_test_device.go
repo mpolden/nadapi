@@ -7,9 +7,7 @@ type testPort struct {
 	state map[string]Cmd
 }
 
-func (p *testPort) Close() (err error) {
-	return
-}
+func (p *testPort) Close() (err error) { return }
 
 func (p *testPort) Read(b []byte) (n int, err error) {
 	r := []byte(<-p.reply)
@@ -31,10 +29,10 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 			return 0, fmt.Errorf("missing initial value for: %s", cmd.String())
 		}
 		p.reply <- r.Delimited()
-		return len(b), nil
+	} else {
+		p.state[cmd.Variable] = cmd
+		p.reply <- cmd.Delimited()
 	}
-	p.state[cmd.Variable] = cmd
-	p.reply <- cmd.Delimited()
 	return len(b), nil
 }
 

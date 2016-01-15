@@ -142,9 +142,9 @@ func (n *Client) Tape1(enable bool) (Reply, error) {
 	return n.enable("Tape1", enable)
 }
 
-// Source sets the current audio source, specified by src
-func (n *Client) Source(src string) (Reply, error) {
-	cmd := Cmd{Variable: "Source", Operator: "=", Value: string(src)}
+// Source sets the current audio source, specified by name
+func (n *Client) Source(name string) (Reply, error) {
+	cmd := Cmd{Variable: "Source", Operator: "=", Value: name}
 	return n.SendCmd(cmd)
 }
 
