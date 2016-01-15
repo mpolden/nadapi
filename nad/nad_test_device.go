@@ -45,8 +45,8 @@ func newTestPort() *testPort {
 	state["Model"] = Cmd{Variable: "Model", Operator: "=", Value: "C356"}
 	state["Mute"] = Cmd{Variable: "Mute", Operator: "=", Value: "Off"}
 	state["Power"] = Cmd{Variable: "Power", Operator: "=", Value: "Off"}
-	state["SpeakerA"] = Cmd{Variable: "SpeakerA", Operator: "=", Value: "On"}
-	state["SpeakerB"] = Cmd{Variable: "SpeakerB", Operator: "=", Value: "Off"}
+	state["Speakera"] = Cmd{Variable: "Speakera", Operator: "=", Value: "On"}
+	state["Speakerb"] = Cmd{Variable: "Speakerb", Operator: "=", Value: "Off"}
 	state["Tape1"] = Cmd{Variable: "Tape1", Operator: "=", Value: "Off"}
 	state["Source"] = Cmd{Variable: "Tape1", Operator: "=", Value: "CD"}
 	return &testPort{reply: reply, state: state}

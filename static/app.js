@@ -21,7 +21,7 @@ nad.initState = function(ctrl) {
   nad.get(ctrl, 'Power');
   nad.get(ctrl, 'Mute');
   nad.get(ctrl, 'Source');
-  nad.get(ctrl, 'SpeakerA');
+  nad.get(ctrl, 'Speakera');
 };
 
 nad.fmtCmd = function(data) {
@@ -66,7 +66,7 @@ nad.controller = function() {
   var ctrl = this;
   ctrl.error = m.prop({});
   ctrl.model = m.prop({
-    state: {Power: false, Mute: false, SpeakerA: true},
+    state: {Power: false, Mute: false, Speakera: true},
     message: {}
   });
   ctrl.helpVisible = m.prop(false);
@@ -111,9 +111,9 @@ nad.controller = function() {
   };
   ctrl.speakerA = function() {
     nad.send(ctrl, {
-      Variable: 'SpeakerA',
+      Variable: 'Speakera',
       Operator: '=',
-      Value: !ctrl.model().state.SpeakerA
+      Value: !ctrl.model().state.Speakera
     });
   };
   ctrl.showHelp = function() {
@@ -255,7 +255,7 @@ nad.view = function(ctrl) {
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.onoff(ctrl, {
           onclick: ctrl.speakerA,
-          type: 'SpeakerA',
+          type: 'Speakera',
           icon: m('span', {class: 'glyphicon glyphicon-headphones'}),
           invert: true
         })
