@@ -17,11 +17,12 @@ nad.keyBindings = [
    description: 'Togge list of keyboard shortcuts'}
 ];
 
-nad.initState = function(ctrl) {
-  nad.get(ctrl, 'Power');
-  nad.get(ctrl, 'Mute');
-  nad.get(ctrl, 'Source');
-  nad.get(ctrl, 'Speakera');
+nad.initState = function(ctrl, refresh) {
+  var data = refresh ? {refresh: true} : {};
+  nad.get(ctrl, 'Power', data);
+  nad.get(ctrl, 'Mute', data);
+  nad.get(ctrl, 'Source', data);
+  nad.get(ctrl, 'Speakera', data);
 };
 
 nad.fmtCmd = function(data) {
@@ -39,8 +40,9 @@ nad.toValue = function(v) {
   return v;
 };
 
-nad.get = function(ctrl, variable) {
-  m.request({method: 'GET', url: '/api/v1/nad/state/' + variable})
+nad.get = function(ctrl, variable, data) {
+  var url = '/api/v1/nad/state/' + variable;
+  m.request({method: 'GET', url: url, data: data})
     .then(function (data) {
       var state = ctrl.model().state;
       state[data.Variable] = nad.fromValue(data.Value);
@@ -103,6 +105,9 @@ nad.controller = function() {
       Value: value
     });
   };
+  ctrl.reloadState = function() {
+    nad.initState(ctrl, true);
+  };
   ctrl.amp = function() {
     nad.send(ctrl, {
       Variable: 'Model',
@@ -123,7 +128,7 @@ nad.controller = function() {
     m.endComputation();
   };
   nad.bindKeys(ctrl);
-  nad.initState(ctrl);
+  nad.initState(ctrl, false);
 };
 
 nad.console = function(ctrl) {
@@ -167,6 +172,13 @@ nad.source = function(ctrl) {
     var selected = model.state.Source === val ? 'selected' : '';
     return m('option', {value: val, selected: selected}, src);
   }));
+};
+
+nad.reloadState = function(ctrl, options) {
+  return m('button[type=button]', {
+    class: 'btn btn-default',
+    onclick: ctrl.reloadState
+  }, options.icon);
 };
 
 nad.amp = function(ctrl, options) {
@@ -267,7 +279,12 @@ nad.view = function(ctrl) {
       ])
     ]),
     m('div.row', [
-      m('div.col-md-4', {class: 'top-spacing'}, nad.source(ctrl))
+      m('div.col-md-2', {class: 'top-spacing'}, nad.source(ctrl)),
+      m('div.col-md-2', {class: 'top-spacing'}, [
+        nad.reloadState(ctrl, {
+          icon: m('span', {class: 'glyphicon glyphicon-refresh'})
+        })
+      ])
     ]),
     m('div.row', m('div.col-md-4', {class: 'top-spacing'}, nad.help(ctrl)))
   ]);

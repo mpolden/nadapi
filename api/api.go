@@ -74,9 +74,12 @@ func (a *API) StateHandler(w http.ResponseWriter, req *http.Request) (interface{
 			Message: "Missing required parameter: variable",
 		}
 	}
-	// Return cached value if it exists
-	if reply, ok := a.cacheGet(v); ok {
-		return reply, nil
+	_, refresh := req.URL.Query()["refresh"]
+	// If not forcing refresh, return cached value if it exists
+	if !refresh {
+		if reply, ok := a.cacheGet(v); ok {
+			return reply, nil
+		}
 	}
 	// Send command and cache result
 	reply, err := a.Client.SendCmd(nad.Cmd{Variable: v, Operator: "?"})
