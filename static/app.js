@@ -128,7 +128,6 @@ nad.controller = function() {
     m.endComputation();
   };
   nad.bindKeys(ctrl);
-  nad.initState(ctrl, false);
 };
 
 nad.console = function(ctrl) {
