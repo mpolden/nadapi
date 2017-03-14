@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/martinp/nadapi/nad"
+	"github.com/mpolden/nadapi/nad"
 )
 
 // API represents an API server.

@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/martinp/nadapi/api"
-	"github.com/martinp/nadapi/nad"
+	"github.com/mpolden/nadapi/api"
+	"github.com/mpolden/nadapi/nad"
 )
 
 type opts struct {
