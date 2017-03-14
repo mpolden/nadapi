@@ -1,6 +1,6 @@
 # nadapi
 
-[![Build Status](https://travis-ci.org/martinp/nadapi.svg)](https://travis-ci.org/martinp/nadapi)
+[![Build Status](https://travis-ci.org/mpolden/nadapi.svg)](https://travis-ci.org/mpolden/nadapi)
 
 A tool that implements the RS-232 protocol for NAD amplifiers. The protocol
 documentation can be found [here](http://nadelectronics.com/software).
