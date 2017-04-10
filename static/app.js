@@ -1,8 +1,73 @@
 var nad = nad || {};
 
-nad.bindKeys = function(ctrl) {
-  _.each(nad.keyBindings, function (kb) {
-    Mousetrap.bind(kb.key, ctrl[kb.callback]);
+nad.state = {
+  // Initial amplifier state
+  amp: {Power: false, Mute: false, Speakera: true},
+  message: {},
+  error: {},
+  helpVisible: false,
+  power: function() {
+    nad.send({
+      Variable: 'Power',
+      Operator: '=',
+      Value: !nad.state.amp.Power
+    });
+  },
+  mute: function() {
+    nad.send({
+      Variable: 'Mute',
+      Operator: '=',
+      Value: !nad.state.amp.Mute
+    });
+  },
+  volumeUp: function() {
+    nad.send({
+      Variable: 'Volume',
+      Operator: '+',
+    });
+  },
+  volumeDown: function() {
+    nad.send({
+      Variable: 'Volume',
+      Operator: '-',
+    });
+  },
+  source: function(value) {
+    nad.send({
+      Variable: 'Source',
+      Operator: '=',
+      Value: value
+    });
+  },
+  ampModel: function() {
+    nad.send({
+      Variable: 'Model',
+      Operator: '?'
+    });
+  },
+  speakerA: function() {
+    nad.send({
+      Variable: 'Speakera',
+      Operator: '=',
+      Value: !nad.state.amp.Speakera
+    });
+  },
+  reload: function(refresh) {
+    var data = refresh ? {refresh: true} : {};
+    nad.get('Power', data);
+    nad.get('Mute', data);
+    nad.get('Source', data);
+    nad.get('Speakera', data);
+  },
+  toggleHelp: function() {
+    nad.state.helpVisible = !nad.state.helpVisible;
+    m.redraw();
+  }
+};
+
+nad.bindKeys = function() {
+  nad.keyBindings.forEach(function (kb) {
+    Mousetrap.bind(kb.key, nad.state[kb.callback]);
   });
 };
 
@@ -13,17 +78,9 @@ nad.keyBindings = [
   {key: 'i', callback: 'amp', description: 'Get amplifier model'},
   {key: '+', callback: 'volumeUp', description: 'Increase volume'},
   {key: '-', callback: 'volumeDown', description: 'Decrease volume'},
-  {key: 'h', callback: 'showHelp',
+  {key: 'h', callback: 'toggleHelp',
    description: 'Togge list of keyboard shortcuts'}
 ];
-
-nad.initState = function(ctrl, refresh) {
-  var data = refresh ? {refresh: true} : {};
-  nad.get(ctrl, 'Power', data);
-  nad.get(ctrl, 'Mute', data);
-  nad.get(ctrl, 'Source', data);
-  nad.get(ctrl, 'Speakera', data);
-};
 
 nad.fmtCmd = function(data) {
   return 'Main.' + [data.Variable, data.Value].join(data.Operator);
@@ -34,119 +91,53 @@ nad.fromValue = function(v) {
 };
 
 nad.toValue = function(v) {
-  if (_.isBoolean(v)) {
+  if (v === true || v === false) {
     return v ? 'On' : 'Off';
   }
   return v;
 };
 
-nad.get = function(ctrl, variable, data) {
+nad.get = function(variable, data) {
   var url = '/api/v1/nad/state/' + variable;
   m.request({method: 'GET', url: url, data: data})
     .then(function (data) {
-      var state = ctrl.model().state;
-      state[data.Variable] = nad.fromValue(data.Value);
-      ctrl.model({state: state});
-    }, ctrl.error);
+      var amp = nad.state.amp;
+      amp[data.Variable] = nad.fromValue(data.Value);
+    }, function (data) {
+      nad.state.error = data;
+    });
 };
 
-nad.send = function(ctrl, req) {
+nad.send = function(req) {
   req.Value = nad.toValue(req.Value);
   m.request({method: 'POST', url: '/api/v1/nad', data: req})
     .then(function (data) {
-      var state = ctrl.model().state;
-      state[data.Variable] = nad.fromValue(data.Value);
-      ctrl.error({});
-      ctrl.model({
-        message: {request: req, reply: data},
-        state: state,
-      });
-    }, ctrl.error);
+      var amp = nad.state.amp;
+      amp[data.Variable] = nad.fromValue(data.Value);
+      nad.state.error = {};
+      nad.state.message = {request: req, reply: data};
+    }, function (data) {
+      nad.state.error = data;
+    });
 };
 
-nad.controller = function() {
-  var ctrl = this;
-  ctrl.error = m.prop({});
-  ctrl.model = m.prop({
-    state: {Power: false, Mute: false, Speakera: true},
-    message: {}
-  });
-  ctrl.helpVisible = m.prop(false);
-  ctrl.power = function() {
-    nad.send(ctrl, {
-      Variable: 'Power',
-      Operator: '=',
-      Value: !ctrl.model().state.Power
-    });
-  };
-  ctrl.mute = function() {
-    nad.send(ctrl, {
-      Variable: 'Mute',
-      Operator: '=',
-      Value: !ctrl.model().state.Mute
-    });
-  };
-  ctrl.volumeUp = function() {
-    nad.send(ctrl, {
-      Variable: 'Volume',
-      Operator: '+',
-    });
-  };
-  ctrl.volumeDown = function() {
-    nad.send(ctrl, {
-      Variable: 'Volume',
-      Operator: '-',
-    });
-  };
-  ctrl.source = function(value) {
-    nad.send(ctrl, {
-      Variable: 'Source',
-      Operator: '=',
-      Value: value
-    });
-  };
-  ctrl.reloadState = function() {
-    nad.initState(ctrl, true);
-  };
-  ctrl.amp = function() {
-    nad.send(ctrl, {
-      Variable: 'Model',
-      Operator: '?'
-    });
-  };
-  ctrl.speakerA = function() {
-    nad.send(ctrl, {
-      Variable: 'Speakera',
-      Operator: '=',
-      Value: !ctrl.model().state.Speakera
-    });
-  };
-  ctrl.showHelp = function() {
-    var visible = ctrl.helpVisible();
-    m.startComputation();
-    ctrl.helpVisible(!visible);
-    m.endComputation();
-  };
-  nad.bindKeys(ctrl);
-};
-
-nad.console = function(ctrl) {
+nad.console = function() {
   var text;
-  if (_.isEmpty(ctrl.model().message)) {
+  if (Object.keys(nad.state.message).length === 0) {
     text = ['These go to eleven!'];
   } else {
-    text = ['sent:     ' + nad.fmtCmd(ctrl.model().message.request),
-            'received: ' + nad.fmtCmd(ctrl.model().message.reply)];
+    text = ['sent:     ' + nad.fmtCmd(nad.state.message.request),
+            'received: ' + nad.fmtCmd(nad.state.message.reply)];
   }
   return m('pre.console', text.join('\n'));
 };
 
-nad.onoff = function(ctrl, options) {
-  var state = ctrl.model().state;
-  if (!_.has(state, options.type)) {
+nad.onoff = function(options) {
+  var amp = nad.state.amp;
+  if (!amp.hasOwnProperty(options.type)) {
     throw 'Unknown type: ' + options.type;
   }
-  var isOn = state[options.type];
+  var isOn = amp[options.type];
   var active = options.invert ? !isOn : isOn;
   return m('button[type=button]', {
     class: 'btn btn-default btn-lg' + (active ? ' active' : ''),
@@ -154,42 +145,42 @@ nad.onoff = function(ctrl, options) {
   }, options.icon);
 };
 
-nad.volume = function(ctrl, options) {
+nad.volume = function(options) {
   return m('button[type=button]', {
     class: 'btn btn-default btn-lg',
     onclick: options.onclick
   }, options.icon);
 };
 
-nad.source = function(ctrl) {
+nad.source = function() {
   var sources = ['CD', 'Tuner', 'Video', 'Disc/MDC', 'Tape2', 'Aux'];
-  var model = ctrl.model();
+  var amp = nad.state.amp;
   return m('select.form-control', {
-    onchange: m.withAttr('value', ctrl.source)
-  }, _.map(sources, function(src) {
+    onchange: m.withAttr('value', nad.state.source)
+  }, sources.map(function(src) {
     var val = src.toUpperCase();
-    var selected = model.state.Source === val ? 'selected' : '';
+    var selected = amp.Source === val ? 'selected' : '';
     return m('option', {value: val, selected: selected}, src);
   }));
 };
 
-nad.reloadState = function(ctrl, options) {
+nad.reloadState = function(options) {
   return m('button[type=button]', {
     class: 'btn btn-default',
-    onclick: ctrl.reloadState
+    onclick: nad.state.reload
   }, options.icon);
 };
 
-nad.amp = function(ctrl, options) {
+nad.amp = function(options) {
   return m('button[type=button]', {
     class: 'btn btn-default btn-lg',
-    onclick: ctrl.amp
+    onclick: nad.state.ampModel
   }, options.icon);
 };
 
-nad.error = function(ctrl) {
-  var e = ctrl.error();
-  var isError = !_.isEmpty(e);
+nad.error = function() {
+  var e = nad.state.error;
+  var isError = Object.keys(e).length !== 0;
   var text = isError ? e.message + ' (' + e.status + ')' : '';
   var cls = 'alert-danger' + (isError ? '' : ' hidden');
   return m('div.alert', {class: cls, role: 'alert'}, [
@@ -197,12 +188,12 @@ nad.error = function(ctrl) {
   ]);
 };
 
-nad.help = function(ctrl) {
-  if (!ctrl.helpVisible()) {
+nad.help = function() {
+  if (!nad.state.helpVisible) {
     return m('p.text-muted', 'Tip: Press ', m('code', 'h'),
              ' to display keyboard shortcuts');
   }
-  var rows = _.map(nad.keyBindings, function (kb) {
+  var rows = nad.keyBindings.map(function (kb) {
     return m('tr', [
       m('td', m('center', m('code', kb.key))),
       m('td', kb.description)
@@ -217,7 +208,9 @@ nad.help = function(ctrl) {
           );
 };
 
-nad.view = function(ctrl) {
+nad.oninit = nad.bindKeys;
+
+nad.view = function() {
   return m('div.container', [
     m('div.row', [
       m('div.col-md-4', m('h1', [
@@ -225,24 +218,24 @@ nad.view = function(ctrl) {
       ]))
     ]),
     m('div.row', [
-      m('div.col-md-4', nad.error(ctrl))
+      m('div.col-md-4', nad.error())
     ]),
     m('div.row', [
       m('div.col-md-4', [
-        nad.console(ctrl)
+        nad.console()
       ])
     ]),
     m('div.row', [
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.onoff(ctrl, {
-          onclick: ctrl.power,
+        nad.onoff({
+          onclick: nad.state.power,
           type: 'Power',
           icon: m('span', {class: 'glyphicon glyphicon-off'})
         })
       ]),
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.onoff(ctrl, {
-          onclick: ctrl.mute,
+        nad.onoff({
+          onclick: nad.state.mute,
           type: 'Mute',
           icon: m('span', {class: 'glyphicon glyphicon-volume-off'})
         })
@@ -250,42 +243,42 @@ nad.view = function(ctrl) {
     ]),
     m('div.row', [
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.volume(ctrl, {
-          onclick: ctrl.volumeUp,
+        nad.volume({
+          onclick: nad.state.volumeUp,
           icon: m('span', {class: 'glyphicon glyphicon-volume-up'})
         })
       ]),
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.volume(ctrl, {
-          onclick: ctrl.volumeDown,
+        nad.volume({
+          onclick: nad.state.volumeDown,
           icon: m('span', {class: 'glyphicon glyphicon-volume-down'})
         })
       ])
     ]),
     m('div.row', [
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.onoff(ctrl, {
-          onclick: ctrl.speakerA,
+        nad.onoff({
+          onclick: nad.state.speakerA,
           type: 'Speakera',
           icon: m('span', {class: 'glyphicon glyphicon-headphones'}),
           invert: true
         })
       ]),
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.amp(ctrl, {
+        nad.amp({
           icon: m('span', {class: 'glyphicon glyphicon-info-sign'})
         })
       ])
     ]),
     m('div.row', [
-      m('div.col-md-2', {class: 'top-spacing'}, nad.source(ctrl)),
+      m('div.col-md-2', {class: 'top-spacing'}, nad.source()),
       m('div.col-md-2', {class: 'top-spacing'}, [
-        nad.reloadState(ctrl, {
+        nad.reloadState({
           icon: m('span', {class: 'glyphicon glyphicon-refresh'})
         })
       ])
     ]),
-    m('div.row', m('div.col-md-4', {class: 'top-spacing'}, nad.help(ctrl)))
+    m('div.row', m('div.col-md-4', {class: 'top-spacing'}, nad.help()))
   ]);
 };
 
