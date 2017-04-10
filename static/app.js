@@ -76,6 +76,7 @@ nad.keyBindings = [
   {key: 'm', callback: 'mute', description: 'Toggle mute'},
   {key: 's', callback: 'speakerA', description: 'Toggle headphones'},
   {key: 'i', callback: 'amp', description: 'Get amplifier model'},
+  {key: 'r', callback: 'reload', description: 'Reload state from amplifier'},
   {key: '+', callback: 'volumeUp', description: 'Increase volume'},
   {key: '-', callback: 'volumeDown', description: 'Decrease volume'},
   {key: 'h', callback: 'toggleHelp',
