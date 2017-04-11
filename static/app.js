@@ -2,7 +2,12 @@ var nad = nad || {};
 
 nad.state = {
   // Initial amplifier state
-  amp: {Power: false, Mute: false, Speakera: true},
+  amp: {
+    Power: false,
+    Mute: false,
+    SpeakerA: true,
+    Source: 'CD'
+  },
   message: {},
   error: {},
   helpVisible: false,
@@ -47,16 +52,16 @@ nad.state = {
   },
   speakerA: function() {
     nad.send({
-      Variable: 'Speakera',
+      Variable: 'SpeakerA',
       Operator: '=',
-      Value: !nad.state.amp.Speakera
+      Value: !nad.state.amp.SpeakerA
     });
   },
   reload: function() {
     nad.get('Power');
     nad.get('Mute');
     nad.get('Source');
-    nad.get('Speakera');
+    nad.get('SpeakerA');
   },
   toggleHelp: function() {
     nad.state.helpVisible = !nad.state.helpVisible;
@@ -259,7 +264,7 @@ nad.view = function() {
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.onoff({
           onclick: nad.state.speakerA,
-          type: 'Speakera',
+          type: 'SpeakerA',
           icon: m('span', {class: 'glyphicon glyphicon-headphones'}),
           invert: true
         })
