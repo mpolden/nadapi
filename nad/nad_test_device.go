@@ -1,6 +1,9 @@
 package nad
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type testPort struct {
 	reply chan string
@@ -23,14 +26,15 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 	if !cmd.Valid() {
 		return 0, fmt.Errorf("invalid command: %s", cmd.String())
 	}
+	v := strings.ToLower(cmd.Variable)
 	if cmd.Operator == "?" {
-		r, ok := p.state[cmd.Variable]
+		r, ok := p.state[v]
 		if !ok {
 			return 0, fmt.Errorf("missing initial value for: %s", cmd.String())
 		}
 		p.reply <- r.Delimited()
 	} else {
-		p.state[cmd.Variable] = cmd
+		p.state[v] = cmd
 		p.reply <- cmd.Delimited()
 	}
 	return len(b), nil
@@ -40,13 +44,13 @@ func newTestPort() *testPort {
 	reply := make(chan string, 1)
 	state := make(map[string]Cmd)
 	// Initial state
-	state["Model"] = Cmd{Variable: "Model", Operator: "=", Value: "C356"}
-	state["Mute"] = Cmd{Variable: "Mute", Operator: "=", Value: "Off"}
-	state["Power"] = Cmd{Variable: "Power", Operator: "=", Value: "Off"}
-	state["Speakera"] = Cmd{Variable: "Speakera", Operator: "=", Value: "On"}
-	state["Speakerb"] = Cmd{Variable: "Speakerb", Operator: "=", Value: "Off"}
-	state["Tape1"] = Cmd{Variable: "Tape1", Operator: "=", Value: "Off"}
-	state["Source"] = Cmd{Variable: "Source", Operator: "=", Value: "CD"}
+	state["model"] = Cmd{Variable: "Model", Operator: "=", Value: "C356"}
+	state["mute"] = Cmd{Variable: "Mute", Operator: "=", Value: "Off"}
+	state["power"] = Cmd{Variable: "Power", Operator: "=", Value: "Off"}
+	state["speakera"] = Cmd{Variable: "SpeakerA", Operator: "=", Value: "On"}
+	state["speakerb"] = Cmd{Variable: "SpeakerB", Operator: "=", Value: "Off"}
+	state["tape1"] = Cmd{Variable: "Tape1", Operator: "=", Value: "Off"}
+	state["source"] = Cmd{Variable: "Source", Operator: "=", Value: "CD"}
 	return &testPort{reply: reply, state: state}
 }
 
