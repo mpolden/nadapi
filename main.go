@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -39,7 +40,7 @@ func (s *serverCmd) Execute(args []string) error {
 	api := api.New(client)
 	api.StaticDir = s.StaticDir
 	log.Printf("Listening on %s", s.Listen)
-	if err := api.ListenAndServe(s.Listen); err != nil {
+	if err := http.ListenAndServe(s.Listen, api.Handler()); err != nil {
 		return err
 	}
 	return nil

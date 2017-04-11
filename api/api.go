@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -16,6 +17,22 @@ type API struct {
 	StaticDir string
 }
 
+// State represents a response from the state API.
+type State struct {
+	Power    *bool  `json:"power,omitempty"`
+	SpeakerA *bool  `json:"speakerA,omitempty"`
+	SpeakerB *bool  `json:"speakerB,omitempty"`
+	Mute     *bool  `json:"mute,omitempty"`
+	Source   string `json:"source,omitempty"`
+	Model    string `json:"model,omitempty"`
+	Volume   string `json:"volume,omitempty"`
+}
+
+// AmpValue represents a value that will be sent to the amplifier.
+type AmpValue struct {
+	Value string `json:"value"`
+}
+
 // Error represents an error in the API, which is returned to the user.
 type Error struct {
 	err     error
@@ -23,54 +40,155 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// DeviceHandler is the handler which handles communication with an amplifier.
-func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
-	defer req.Body.Close()
-	decoder := json.NewDecoder(req.Body)
-	var cmd nad.Cmd
-	if err := decoder.Decode(&cmd); err != nil {
-		return nil, &Error{
+func isOn(s string) bool { return strings.ToLower(s) == "on" }
+
+func (a *API) queryStateString(variable string) (string, *Error) {
+	reply, err := a.Client.SendCmd(nad.Cmd{Variable: variable, Operator: "?"})
+	if err != nil {
+		return "", &Error{
 			err:     err,
+			Status:  http.StatusInternalServerError,
+			Message: fmt.Sprintf("Failed to get %s state from amplifier", variable),
+		}
+	}
+	return reply.Value, nil
+}
+
+func (a *API) queryStateBool(variable string) (bool, *Error) {
+	s, err := a.queryStateString(variable)
+	if err != nil {
+		return false, err
+	}
+	return isOn(s), nil
+}
+
+func (a *API) queryState(variable string) (State, *Error) {
+	state := State{}
+	switch variable {
+	case "power":
+		on, err := a.queryStateBool("Power")
+		if err != nil {
+			return State{}, err
+		}
+		state.Power = &on
+	case "mute":
+		on, err := a.queryStateBool("Mute")
+		if err != nil {
+			return State{}, err
+		}
+		state.Mute = &on
+	case "speakera":
+		on, err := a.queryStateBool("SpeakerA")
+		if err != nil {
+			return State{}, err
+		}
+		state.SpeakerA = &on
+	case "speakerb":
+		on, err := a.queryStateBool("SpeakerB")
+		if err != nil {
+			return State{}, err
+		}
+		state.SpeakerB = &on
+	case "source":
+		source, err := a.queryStateString("Source")
+		if err != nil {
+			return State{}, err
+		}
+		state.Source = source
+	case "model":
+		model, err := a.queryStateString("Model")
+		if err != nil {
+			return State{}, err
+		}
+		state.Model = model
+	default:
+		return State{}, &Error{
 			Status:  http.StatusBadRequest,
-			Message: "Invalid JSON",
+			Message: fmt.Sprintf("Invalid variable: %q", variable),
+		}
+	}
+	return state, nil
+}
+
+func (a *API) modifyState(variable string, value AmpValue) (State, *Error) {
+	cmd := nad.Cmd{Variable: variable, Operator: "=", Value: value.Value}
+	switch value.Value {
+	case "+", "-", "?":
+		cmd.Operator = value.Value
+		cmd.Value = ""
+	}
+	if !cmd.Valid() || value.Value == "?" {
+		return State{}, &Error{
+			Status:  http.StatusBadRequest,
+			Message: fmt.Sprintf("Invalid command: %s%s%s", cmd.Variable, cmd.Operator, cmd.Value),
 		}
 	}
 	reply, err := a.Client.SendCmd(cmd)
 	if err != nil {
-		return nil, &Error{
+		return State{}, &Error{
 			err:     err,
 			Status:  http.StatusInternalServerError,
-			Message: "Failed to send command to amplifier",
+			Message: fmt.Sprintf("Could not send command to amplifier: %s", err),
 		}
 	}
-	return reply, nil
+	state := State{}
+	switch strings.ToLower(reply.Variable) {
+	case "power":
+		on := isOn(reply.Value)
+		state.Power = &on
+	case "mute":
+		on := isOn(reply.Value)
+		state.Mute = &on
+	case "speakera":
+		on := isOn(reply.Value)
+		state.SpeakerA = &on
+	case "speakerb":
+		on := isOn(reply.Value)
+		state.SpeakerB = &on
+	case "source":
+		state.Source = reply.Value
+	case "model":
+		state.Model = reply.Value
+	case "volume":
+		state.Volume = reply.Operator
+	}
+	return state, nil
 }
 
-// StateHandler handles queries for the amplifiers state
-func (a *API) StateHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
-	v := filepath.Base(req.URL.Path)
-	if v == "state" {
+// StateHandler handles requests that query or modify the amplifiers state.
+func (a *API) StateHandler(w http.ResponseWriter, r *http.Request) (interface{}, *Error) {
+	variable := strings.ToLower(filepath.Base(r.URL.Path))
+	if variable == "state" {
 		return nil, &Error{
 			Status:  http.StatusBadRequest,
-			Message: "Missing required path parameter: variable",
+			Message: "Missing path parameter",
 		}
 	}
-	// Send command
-	reply, err := a.Client.SendCmd(nad.Cmd{Variable: v, Operator: "?"})
-	if err != nil {
-		return nil, &Error{
-			err:     err,
-			Status:  http.StatusInternalServerError,
-			Message: "Failed to send command to amplifier",
-		}
+	if r.Method == http.MethodGet {
+		return a.queryState(variable)
 	}
-	return reply, nil
+	if r.Method == http.MethodPatch {
+		defer r.Body.Close()
+		d := json.NewDecoder(r.Body)
+		var av AmpValue
+		if err := d.Decode(&av); err != nil {
+			return nil, &Error{
+				err:     err,
+				Status:  http.StatusBadRequest,
+				Message: "Malformed JSON",
+			}
+		}
+		return a.modifyState(variable, av)
+	}
+	return nil, &Error{
+		Status:  http.StatusBadRequest,
+		Message: fmt.Sprintf("Invalid request method %s, must be %s or %s", r.Method, http.MethodGet, http.MethodPatch),
+	}
 }
 
 // NotFoundHandler handles requests to invalid routes.
 func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
 	return nil, &Error{
-		err:     nil,
 		Status:  http.StatusNotFound,
 		Message: "Not found",
 	}
@@ -113,16 +231,15 @@ func requestFilter(next http.Handler) http.Handler {
 	})
 }
 
-// ListenAndServe listens on the TCP network address addr and starts serving the
-// API.
-func (a *API) ListenAndServe(addr string) error {
+// Handler returns a handler for the API.
+func (a *API) Handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle("/api/v1/nad", appHandler(a.DeviceHandler))
-	mux.Handle("/api/v1/nad/state/", appHandler(a.StateHandler))
-	mux.Handle("/", appHandler(a.NotFoundHandler))
+	mux.Handle("/api/v1/state/", appHandler(a.StateHandler))
+	// Return 404 in JSON for all unknown requests under /api/
+	mux.Handle("/api/", appHandler(a.NotFoundHandler))
 	if a.StaticDir != "" {
 		fs := http.StripPrefix("/static/", http.FileServer(http.Dir(a.StaticDir)))
 		mux.Handle("/static/", fs)
 	}
-	return http.ListenAndServe(addr, requestFilter(mux))
+	return requestFilter(mux)
 }
