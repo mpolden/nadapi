@@ -71,6 +71,9 @@ nad.state = {
 
 nad.bindKeys = function() {
   nad.keyBindings.forEach(function (kb) {
+    if (typeof nad.state[kb.callback] !== 'function') {
+      throw 'Invalid callback "' + kb.callback + '" for keybinding "' + kb.key + '"';
+    }
     Mousetrap.bind(kb.key, nad.state[kb.callback]);
   });
 };
@@ -79,7 +82,7 @@ nad.keyBindings = [
   {key: 'p', callback: 'power', description: 'Toggle power'},
   {key: 'm', callback: 'mute', description: 'Toggle mute'},
   {key: 's', callback: 'speakerA', description: 'Toggle headphones'},
-  {key: 'i', callback: 'amp', description: 'Get amplifier model'},
+  {key: 'i', callback: 'ampModel', description: 'Get amplifier model'},
   {key: 'r', callback: 'reload', description: 'Reload state from amplifier'},
   {key: '+', callback: 'volumeUp', description: 'Increase volume'},
   {key: '-', callback: 'volumeDown', description: 'Decrease volume'},
