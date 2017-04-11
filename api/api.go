@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/mpolden/nadapi/nad"
 )
@@ -15,8 +14,6 @@ import (
 type API struct {
 	Client    *nad.Client
 	StaticDir string
-	cache     map[string]nad.Reply
-	mu        sync.RWMutex
 }
 
 // Error represents an error in the API, which is returned to the user.
@@ -24,19 +21,6 @@ type Error struct {
 	err     error
 	Status  int    `json:"status"`
 	Message string `json:"message"`
-}
-
-func (a *API) cacheSet(r nad.Reply) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.cache[r.Variable] = r
-}
-
-func (a *API) cacheGet(k string) (nad.Reply, bool) {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	v, ok := a.cache[k]
-	return v, ok
 }
 
 // DeviceHandler is the handler which handles communication with an amplifier.
@@ -59,8 +43,6 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 			Message: "Failed to send command to amplifier",
 		}
 	}
-	// Update cached value
-	a.cacheSet(reply)
 	return reply, nil
 }
 
@@ -73,14 +55,7 @@ func (a *API) StateHandler(w http.ResponseWriter, req *http.Request) (interface{
 			Message: "Missing required path parameter: variable",
 		}
 	}
-	_, refresh := req.URL.Query()["refresh"]
-	// If not forcing refresh, return cached value if it exists
-	if !refresh {
-		if reply, ok := a.cacheGet(v); ok {
-			return reply, nil
-		}
-	}
-	// Send command and cache result
+	// Send command
 	reply, err := a.Client.SendCmd(nad.Cmd{Variable: v, Operator: "?"})
 	if err != nil {
 		return nil, &Error{
@@ -89,7 +64,6 @@ func (a *API) StateHandler(w http.ResponseWriter, req *http.Request) (interface{
 			Message: "Failed to send command to amplifier",
 		}
 	}
-	a.cacheSet(reply)
 	return reply, nil
 }
 
@@ -104,7 +78,7 @@ func (a *API) NotFoundHandler(w http.ResponseWriter, req *http.Request) (interfa
 
 // New returns an new API using client to communicate with an amplifier.
 func New(client *nad.Client) *API {
-	return &API{Client: client, cache: make(map[string]nad.Reply)}
+	return &API{Client: client}
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) (interface{}, *Error)

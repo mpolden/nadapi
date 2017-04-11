@@ -52,12 +52,11 @@ nad.state = {
       Value: !nad.state.amp.Speakera
     });
   },
-  reload: function(refresh) {
-    var data = refresh ? {refresh: true} : {};
-    nad.get('Power', data);
-    nad.get('Mute', data);
-    nad.get('Source', data);
-    nad.get('Speakera', data);
+  reload: function() {
+    nad.get('Power');
+    nad.get('Mute');
+    nad.get('Source');
+    nad.get('Speakera');
   },
   toggleHelp: function() {
     nad.state.helpVisible = !nad.state.helpVisible;
@@ -98,9 +97,9 @@ nad.toValue = function(v) {
   return v;
 };
 
-nad.get = function(variable, data) {
+nad.get = function(variable) {
   var url = '/api/v1/nad/state/' + variable;
-  m.request({method: 'GET', url: url, data: data})
+  m.request({method: 'GET', url: url})
     .then(function (data) {
       var amp = nad.state.amp;
       amp[data.Variable] = nad.fromValue(data.Value);
