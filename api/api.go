@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sync"
 
-	"github.com/gorilla/mux"
 	"github.com/mpolden/nadapi/nad"
 )
 
@@ -66,12 +66,11 @@ func (a *API) DeviceHandler(w http.ResponseWriter, req *http.Request) (interface
 
 // StateHandler handles queries for the amplifiers state
 func (a *API) StateHandler(w http.ResponseWriter, req *http.Request) (interface{}, *Error) {
-	vars := mux.Vars(req)
-	v, ok := vars["variable"]
-	if !ok {
+	v := filepath.Base(req.URL.Path)
+	if v == "state" {
 		return nil, &Error{
 			Status:  http.StatusBadRequest,
-			Message: "Missing required parameter: variable",
+			Message: "Missing required path parameter: variable",
 		}
 	}
 	_, refresh := req.URL.Query()["refresh"]
@@ -143,13 +142,13 @@ func requestFilter(next http.Handler) http.Handler {
 // ListenAndServe listens on the TCP network address addr and starts serving the
 // API.
 func (a *API) ListenAndServe(addr string) error {
-	r := mux.NewRouter()
-	r.Handle("/api/v1/nad", appHandler(a.DeviceHandler))
-	r.Handle("/api/v1/nad/state/{variable}", appHandler(a.StateHandler))
-	r.NotFoundHandler = appHandler(a.NotFoundHandler)
+	mux := http.NewServeMux()
+	mux.Handle("/api/v1/nad", appHandler(a.DeviceHandler))
+	mux.Handle("/api/v1/nad/state/", appHandler(a.StateHandler))
+	mux.Handle("/", appHandler(a.NotFoundHandler))
 	if a.StaticDir != "" {
 		fs := http.StripPrefix("/static/", http.FileServer(http.Dir(a.StaticDir)))
-		r.PathPrefix("/static/").Handler(fs)
+		mux.Handle("/static/", fs)
 	}
-	return http.ListenAndServe(addr, requestFilter(r))
+	return http.ListenAndServe(addr, requestFilter(mux))
 }
