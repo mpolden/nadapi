@@ -35,6 +35,7 @@ type AmpValue struct {
 	Value string `json:"value"`
 }
 
+// UnmarshalJSON implements the json.Unmarshaler interface. Both string and boolean are accepted for the "value" field.
 func (av *AmpValue) UnmarshalJSON(data []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	for {
@@ -130,7 +131,7 @@ func (a *API) queryState(variable string) (State, *Error) {
 	default:
 		return State{}, &Error{
 			Status:  http.StatusBadRequest,
-			Message: fmt.Sprintf("Invalid variable: %q", variable),
+			Message: fmt.Sprintf("Invalid command: %s?", variable),
 		}
 	}
 	return state, nil
@@ -185,10 +186,7 @@ func (a *API) modifyState(variable string, value AmpValue) (State, *Error) {
 func (a *API) StateHandler(w http.ResponseWriter, r *http.Request) (interface{}, *Error) {
 	variable := strings.ToLower(filepath.Base(r.URL.Path))
 	if variable == "state" {
-		return nil, &Error{
-			Status:  http.StatusBadRequest,
-			Message: "Missing path parameter",
-		}
+		return a.NotFoundHandler(w, r)
 	}
 	if r.Method == http.MethodGet {
 		return a.queryState(variable)

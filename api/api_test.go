@@ -57,8 +57,8 @@ func TestGetRequests(t *testing.T) {
 	}{
 		{"/not-found", "404 page not found\n", 404},
 		{"/api/not-found", `{"status":404,"message":"Not found"}`, 404},
-		{"/api/v1/state/", `{"status":400,"message":"Missing path parameter"}`, 400},
-		{"/api/v1/state/foo", `{"status":400,"message":"Invalid variable: \"foo\""}`, 400},
+		{"/api/v1/state/", `{"status":404,"message":"Not found"}`, 404},
+		{"/api/v1/state/foo", `{"status":400,"message":"Invalid command: foo?"}`, 400},
 		{"/api/v1/state/power", `{"power":false}`, 200},
 		{"/api/v1/state/mute", `{"mute":false}`, 200},
 		{"/api/v1/state/speakera", `{"speakerA":true}`, 200},
