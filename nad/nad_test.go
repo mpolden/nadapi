@@ -12,7 +12,7 @@ func TestSendCmd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Model=C356"; actual.String() != expected {
+	if expected := "Main.Model=C356BEE"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
@@ -23,7 +23,7 @@ func TestModel(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if expected := "Main.Model=C356"; actual.String() != expected {
+	if expected := "Main.Model=C356BEE"; actual.String() != expected {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
 }
