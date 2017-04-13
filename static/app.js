@@ -87,30 +87,14 @@ nad.fmtCmd = function(variable, value) {
     break;
   }
   switch (variable) {
-  case 'power':
-    variable = 'Power';
-    break;
-  case 'mute':
-    variable = 'Mute';
-    break;
   case 'speakerA':
     variable = 'SpeakerA';
     break;
-  case 'model':
-    variable = 'Model';
-    break;
-  case 'volume':
-    variable = 'Volume';
+  default:
+    variable = variable.charAt(0).toUpperCase() + variable.slice(1);
     break;
   }
   return 'Main.' + [variable, value].join(operator);
-};
-
-nad.toValue = function(v) {
-  if (v === true || v === false) {
-    return v ? 'On' : 'Off';
-  }
-  return v;
 };
 
 nad.get = function(variable, callback) {
@@ -125,8 +109,7 @@ nad.get = function(variable, callback) {
 };
 
 nad.send = function(variable, value) {
-  var request = {value: nad.toValue(value)};
-  m.request({method: 'PATCH', url: '/api/v1/state/' + variable, data: request})
+  m.request({method: 'PATCH', url: '/api/v1/state/' + variable, data: {value: value}})
     .then(function (data) {
       Object.assign(nad.state.amp, data);
       nad.state.error = {};
