@@ -3,65 +3,45 @@ var nad = nad || {};
 nad.state = {
   // Initial amplifier state
   amp: {
-    Power: false,
-    Mute: false,
-    SpeakerA: true,
-    Source: 'CD'
+    power: false,
+    speakerA: true,
+    speakerB: false,
+    mute: false,
+    source: 'CD',
+    model: ''
   },
   message: {},
   error: {},
   helpVisible: false,
   power: function() {
-    nad.send({
-      Variable: 'Power',
-      Operator: '=',
-      Value: !nad.state.amp.Power
-    });
+    nad.send('power', !nad.state.amp.power);
   },
   mute: function() {
-    nad.send({
-      Variable: 'Mute',
-      Operator: '=',
-      Value: !nad.state.amp.Mute
-    });
+    nad.send('mute', !nad.state.amp.mute);
   },
   volumeUp: function() {
-    nad.send({
-      Variable: 'Volume',
-      Operator: '+',
-    });
+    nad.send('volume', '+');
   },
   volumeDown: function() {
-    nad.send({
-      Variable: 'Volume',
-      Operator: '-',
-    });
+    nad.send('volume', '-');
   },
   source: function(value) {
-    nad.send({
-      Variable: 'Source',
-      Operator: '=',
-      Value: value
-    });
+    nad.send('source', value);
   },
   ampModel: function() {
-    nad.send({
-      Variable: 'Model',
-      Operator: '?'
+    nad.get('model', function (data) {
+      nad.state.message = {request: {variable: 'model', value: '?'},
+                           reply: data};
     });
   },
   speakerA: function() {
-    nad.send({
-      Variable: 'SpeakerA',
-      Operator: '=',
-      Value: !nad.state.amp.SpeakerA
-    });
+    nad.send('speakerA', !nad.state.amp.speakerA);
   },
   reload: function() {
-    nad.get('Power');
-    nad.get('Mute');
-    nad.get('Source');
-    nad.get('SpeakerA');
+    nad.get('power');
+    nad.get('mute');
+    nad.get('source');
+    nad.get('speakerA');
   },
   toggleHelp: function() {
     nad.state.helpVisible = !nad.state.helpVisible;
@@ -90,12 +70,40 @@ nad.keyBindings = [
    description: 'Togge list of keyboard shortcuts'}
 ];
 
-nad.fmtCmd = function(data) {
-  return 'Main.' + [data.Variable, data.Value].join(data.Operator);
-};
-
-nad.fromValue = function(v) {
-  return v === 'On' || v === 'Off' ? v === 'On' : v;
+nad.fmtCmd = function(variable, value) {
+  var operator = '=';
+  switch (value) {
+  case '?':
+  case '-':
+  case '+':
+    operator = value;
+    value = '';
+    break;
+  case true:
+    value = 'On';
+    break;
+  case false:
+    value = 'Off';
+    break;
+  }
+  switch (variable) {
+  case 'power':
+    variable = 'Power';
+    break;
+  case 'mute':
+    variable = 'Mute';
+    break;
+  case 'speakerA':
+    variable = 'SpeakerA';
+    break;
+  case 'model':
+    variable = 'Model';
+    break;
+  case 'volume':
+    variable = 'Volume';
+    break;
+  }
+  return 'Main.' + [variable, value].join(operator);
 };
 
 nad.toValue = function(v) {
@@ -105,25 +113,25 @@ nad.toValue = function(v) {
   return v;
 };
 
-nad.get = function(variable) {
-  var url = '/api/v1/nad/state/' + variable;
-  m.request({method: 'GET', url: url})
+nad.get = function(variable, callback) {
+  m.request({method: 'GET', url: '/api/v1/state/' + variable})
     .then(function (data) {
-      var amp = nad.state.amp;
-      amp[data.Variable] = nad.fromValue(data.Value);
+      nad.state.amp[variable] = data[variable];
+      return data;
     }, function (data) {
       nad.state.error = data;
-    });
+    })
+    .then(callback);
 };
 
-nad.send = function(req) {
-  req.Value = nad.toValue(req.Value);
-  m.request({method: 'POST', url: '/api/v1/nad', data: req})
+nad.send = function(variable, value) {
+  var request = {value: nad.toValue(value)};
+  m.request({method: 'PATCH', url: '/api/v1/state/' + variable, data: request})
     .then(function (data) {
-      var amp = nad.state.amp;
-      amp[data.Variable] = nad.fromValue(data.Value);
+      Object.assign(nad.state.amp, data);
       nad.state.error = {};
-      nad.state.message = {request: req, reply: data};
+      nad.state.message = {request: {variable: variable, value: value},
+                           reply: data};
     }, function (data) {
       nad.state.error = data;
     });
@@ -134,8 +142,9 @@ nad.console = function() {
   if (Object.keys(nad.state.message).length === 0) {
     text = ['These go to eleven!'];
   } else {
-    text = ['sent:     ' + nad.fmtCmd(nad.state.message.request),
-            'received: ' + nad.fmtCmd(nad.state.message.reply)];
+    var variable = nad.state.message.request.variable;
+    text = ['sent:     ' + nad.fmtCmd(nad.state.message.request.variable, nad.state.message.request.value),
+            'received: ' + nad.fmtCmd(nad.state.message.request.variable, nad.state.message.reply[variable])];
   }
   return m('pre.console', text.join('\n'));
 };
@@ -167,7 +176,7 @@ nad.source = function() {
     onchange: m.withAttr('value', nad.state.source)
   }, sources.map(function(src) {
     var val = src.toUpperCase();
-    var selected = amp.Source === val ? 'selected' : '';
+    var selected = amp.source === val ? 'selected' : '';
     return m('option', {value: val, selected: selected}, src);
   }));
 };
@@ -237,14 +246,14 @@ nad.view = function() {
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.onoff({
           onclick: nad.state.power,
-          type: 'Power',
+          type: 'power',
           icon: m('span', {class: 'glyphicon glyphicon-off'})
         })
       ]),
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.onoff({
           onclick: nad.state.mute,
-          type: 'Mute',
+          type: 'mute',
           icon: m('span', {class: 'glyphicon glyphicon-volume-off'})
         })
       ])
@@ -267,7 +276,7 @@ nad.view = function() {
       m('div.col-md-2', {class: 'top-spacing'}, [
         nad.onoff({
           onclick: nad.state.speakerA,
-          type: 'SpeakerA',
+          type: 'speakerA',
           icon: m('span', {class: 'glyphicon glyphicon-headphones'}),
           invert: true
         })
