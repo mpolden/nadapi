@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -31,6 +33,30 @@ type State struct {
 // AmpValue represents a value that will be sent to the amplifier.
 type AmpValue struct {
 	Value string `json:"value"`
+}
+
+func (av *AmpValue) UnmarshalJSON(data []byte) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	for {
+		t, err := dec.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if v, ok := t.(bool); ok {
+			if v {
+				av.Value = "On"
+			} else {
+				av.Value = "Off"
+			}
+		}
+		if v, ok := t.(string); ok && v != "value" {
+			av.Value = v
+		}
+	}
+	return nil
 }
 
 // Error represents an error in the API, which is returned to the user.
@@ -169,9 +195,9 @@ func (a *API) StateHandler(w http.ResponseWriter, r *http.Request) (interface{},
 	}
 	if r.Method == http.MethodPatch {
 		defer r.Body.Close()
-		d := json.NewDecoder(r.Body)
+		dec := json.NewDecoder(r.Body)
 		var av AmpValue
-		if err := d.Decode(&av); err != nil {
+		if err := dec.Decode(&av); err != nil {
 			return nil, &Error{
 				err:     err,
 				Status:  http.StatusBadRequest,
