@@ -63,7 +63,7 @@ func TestGetRequests(t *testing.T) {
 		{"/api/v1/state/mute", `{"mute":false}`, 200},
 		{"/api/v1/state/speakera", `{"speakerA":true}`, 200},
 		{"/api/v1/state/speakerb", `{"speakerB":false}`, 200},
-		{"/api/v1/state/model", `{"model":"C356"}`, 200},
+		{"/api/v1/state/model", `{"model":"C356BEE"}`, 200},
 		{"/api/v1/state/source", `{"source":"CD"}`, 200},
 	}
 
@@ -95,10 +95,17 @@ func TestPatchRequests(t *testing.T) {
 		{"/api/v1/state/power", `{"value":"+"}`, `{"status":400,"message":"Invalid command: power+"}`, 400},
 		// Model? is considered invalid in this case as it does not modify state
 		{"/api/v1/state/model", `{"value":"?"}`, `{"status":400,"message":"Invalid command: model?"}`, 400},
+		// Both boolean and string are accepted for on/off values
 		{"/api/v1/state/power", `{"value":"on"}`, `{"power":true}`, 200},
 		{"/api/v1/state/power", `{"value":"off"}`, `{"power":false}`, 200},
 		{"/api/v1/state/power", `{"value":true}`, `{"power":true}`, 200},
 		{"/api/v1/state/power", `{"value":false}`, `{"power":false}`, 200},
+		{"/api/v1/state/mute", `{"value":true}`, `{"mute":true}`, 200},
+		{"/api/v1/state/mute", `{"value":false}`, `{"mute":false}`, 200},
+		{"/api/v1/state/speakera", `{"value":true}`, `{"speakerA":true}`, 200},
+		{"/api/v1/state/speakera", `{"value":false}`, `{"speakerA":false}`, 200},
+		{"/api/v1/state/speakerb", `{"value":true}`, `{"speakerB":true}`, 200},
+		{"/api/v1/state/speakerb", `{"value":false}`, `{"speakerB":false}`, 200},
 		{"/api/v1/state/volume", `{"value":"+"}`, `{"volume":"+"}`, 200},
 		{"/api/v1/state/volume", `{"value":"-"}`, `{"volume":"-"}`, 200},
 		{"/api/v1/state/source", `{"value":"DISC/MDC"}`, `{"source":"DISC/MDC"}`, 200},

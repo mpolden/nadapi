@@ -44,7 +44,7 @@ func newTestPort() *testPort {
 	reply := make(chan string, 1)
 	state := make(map[string]Cmd)
 	// Initial state
-	state["model"] = Cmd{Variable: "Model", Operator: "=", Value: "C356"}
+	state["model"] = Cmd{Variable: "Model", Operator: "=", Value: "C356BEE"}
 	state["mute"] = Cmd{Variable: "Mute", Operator: "=", Value: "Off"}
 	state["power"] = Cmd{Variable: "Power", Operator: "=", Value: "Off"}
 	state["speakera"] = Cmd{Variable: "SpeakerA", Operator: "=", Value: "On"}
