@@ -1,10 +1,8 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -37,27 +35,22 @@ type AmpValue struct {
 
 // UnmarshalJSON implements the json.Unmarshaler interface. Both string and boolean are accepted for the "value" field.
 func (av *AmpValue) UnmarshalJSON(data []byte) error {
-	dec := json.NewDecoder(bytes.NewReader(data))
-	for {
-		t, err := dec.Token()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		if v, ok := t.(bool); ok {
-			if v {
-				av.Value = "On"
-			} else {
-				av.Value = "Off"
-			}
-		}
-		if v, ok := t.(string); ok && v != "value" {
-			av.Value = v
-		}
+	var err error
+	var s struct{ Value string }
+	if err = json.Unmarshal(data, &s); err == nil {
+		av.Value = s.Value
+		return nil
 	}
-	return nil
+	var b struct{ Value bool }
+	if err = json.Unmarshal(data, &b); err == nil {
+		if b.Value {
+			av.Value = "on"
+		} else {
+			av.Value = "off"
+		}
+		return nil
+	}
+	return err
 }
 
 // Error represents an error in the API, which is returned to the user.
@@ -196,11 +189,7 @@ func (a *API) StateHandler(w http.ResponseWriter, r *http.Request) (interface{},
 		dec := json.NewDecoder(r.Body)
 		var av AmpValue
 		if err := dec.Decode(&av); err != nil {
-			return nil, &Error{
-				err:     err,
-				Status:  http.StatusBadRequest,
-				Message: "Malformed JSON",
-			}
+			return nil, &Error{Status: http.StatusBadRequest, Message: "Malformed JSON"}
 		}
 		return a.modifyState(variable, av)
 	}
