@@ -51,11 +51,14 @@ $ nadapi server -l :8666
 2015/04/06 17:37:57 Listening on :8666
 ^Z
 
-$ curl -d '{"variable": "model", "operator": "?"}' 'http://localhost:8666/api/v1/nad?pretty'
+$ curl localhost:8666/api/v1/state/power | jq .
 {
-  "Variable": "Model",
-  "Operator": "=",
-  "Value": "C356BEE"
+  "power": false
+}
+
+$ curl -XPATCH -d '{"value":"on"}' localhost:8666/api/v1/state/power | jq .
+{
+  "power": true
 }
 ```
 
