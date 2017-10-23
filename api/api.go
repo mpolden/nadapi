@@ -251,8 +251,8 @@ func (a *API) Handler() http.Handler {
 	// Return 404 in JSON for all unknown requests under /api/
 	mux.Handle("/api/", appHandler(a.NotFoundHandler))
 	if a.StaticDir != "" {
-		fs := http.StripPrefix("/static/", http.FileServer(http.Dir(a.StaticDir)))
-		mux.Handle("/static/", fs)
+		fs := http.FileServer(http.Dir(a.StaticDir))
+		mux.Handle("/", fs)
 	}
 	return requestFilter(mux)
 }

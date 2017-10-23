@@ -39,10 +39,7 @@ func (s *serverCmd) Execute(args []string) error {
 	client.EnableVolume = s.EnableVolume
 	api := api.New(client)
 	api.StaticDir = s.StaticDir
-	log.Printf("Listening on %s", s.Listen)
-	if api.StaticDir != "" {
-		log.Printf("App URL: http://%s/static/", s.Listen)
-	}
+	log.Printf("Listening on http://%s", s.Listen)
 	if err := http.ListenAndServe(s.Listen, api.Handler()); err != nil {
 		return err
 	}
