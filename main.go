@@ -39,7 +39,11 @@ func (s *serverCmd) Execute(args []string) error {
 	client.EnableVolume = s.EnableVolume
 	api := api.New(client)
 	api.StaticDir = s.StaticDir
-	log.Printf("Listening on http://%s", s.Listen)
+	if strings.HasPrefix(s.Listen, ":") {
+		log.Printf("Serving at http://0.0.0.0%s", s.Listen)
+	} else {
+		log.Printf("Serving at http://%s", s.Listen)
+	}
 	if err := http.ListenAndServe(s.Listen, api.Handler()); err != nil {
 		return err
 	}
