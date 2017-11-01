@@ -98,7 +98,7 @@ nad.fmtCmd = function(variable, value) {
 };
 
 nad.get = function(variable, callback) {
-  m.request({method: 'GET', url: 'api/v1/state/' + variable})
+  m.request({method: 'GET', url: '/api/v1/state/' + variable})
     .then(function (data) {
       nad.state.amp[variable] = data[variable];
       return data;
@@ -109,7 +109,7 @@ nad.get = function(variable, callback) {
 };
 
 nad.send = function(variable, value) {
-  m.request({method: 'PATCH', url: 'api/v1/state/' + variable, data: {value: value}})
+  m.request({method: 'PATCH', url: '/api/v1/state/' + variable, data: {value: value}})
     .then(function (data) {
       Object.assign(nad.state.amp, data);
       nad.state.error = {};
