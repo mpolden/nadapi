@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/mpolden/nadapi/api"
+	"github.com/mpolden/nadapi/http"
 	"github.com/mpolden/nadapi/nad"
 )
 
@@ -37,14 +36,14 @@ func (s *serverCmd) Execute(args []string) error {
 		return err
 	}
 	client.EnableVolume = s.EnableVolume
-	api := api.New(client)
-	api.StaticDir = s.StaticDir
+	server := http.New(client)
+	server.StaticDir = s.StaticDir
 	if strings.HasPrefix(s.Listen, ":") {
 		log.Printf("Serving at http://0.0.0.0%s", s.Listen)
 	} else {
 		log.Printf("Serving at http://%s", s.Listen)
 	}
-	if err := http.ListenAndServe(s.Listen, api.Handler()); err != nil {
+	if err := server.ListenAndServe(s.Listen); err != nil {
 		return err
 	}
 	return nil
