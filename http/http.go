@@ -13,7 +13,7 @@ import (
 
 // Server represents an API server.
 type Server struct {
-	Client    *nad.Client
+	client    *nad.Client
 	StaticDir string
 }
 
@@ -63,7 +63,7 @@ type Error struct {
 func isOn(s string) bool { return strings.ToLower(s) == "on" }
 
 func (s *Server) queryStateString(variable string) (string, *Error) {
-	reply, err := s.Client.SendCmd(nad.Cmd{Variable: variable, Operator: "?"})
+	reply, err := s.client.SendCmd(nad.Cmd{Variable: variable, Operator: "?"})
 	if err != nil {
 		return "", &Error{
 			err:     err,
@@ -143,7 +143,7 @@ func (s *Server) modifyState(variable string, value AmpValue) (State, *Error) {
 			Message: fmt.Sprintf("Invalid command: %s%s%s", cmd.Variable, cmd.Operator, cmd.Value),
 		}
 	}
-	reply, err := s.Client.SendCmd(cmd)
+	reply, err := s.client.SendCmd(cmd)
 	if err != nil {
 		return State{}, &Error{
 			err:     err,
@@ -209,7 +209,7 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, req *http.Request) (inte
 
 // New returns an new API using client to communicate with an amplifier.
 func New(client *nad.Client) *Server {
-	return &Server{Client: client}
+	return &Server{client: client}
 }
 
 type appHandler func(http.ResponseWriter, *http.Request) (interface{}, *Error)
