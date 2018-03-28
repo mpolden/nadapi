@@ -4,35 +4,70 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"path/filepath"
 	"sync"
 
 	"github.com/pkg/term"
 )
 
-// Client reprensents a client to the amplifier.
-type Client struct {
+type device struct {
+	name         string
+	realname     string
 	port         io.ReadWriteCloser
-	mu           sync.Mutex
-	EnableVolume bool
+	openPort     func(string) (io.ReadWriteCloser, error)
+	evalSymlinks func(string) (string, error)
 }
 
-// New creates a new client to the amplifier, using device for communication.
-func New(device string) (*Client, error) {
+func (d *device) ensureOpen() error {
+	// Ensure that realname is same as symlink target, in case the symlink changes after we start
+	realname, err := d.evalSymlinks(d.name)
+	if err != nil {
+		return err
+	}
+	if realname == d.realname {
+		return nil
+	}
+	if d.port != nil {
+		d.port.Close()
+	}
+	port, err := d.openPort(realname)
+	if err != nil {
+		return err
+	}
+	d.port = port
+	d.realname = realname
+	return nil
+}
+
+func openPort(name string) (io.ReadWriteCloser, error) {
 	// From RS-232 Protocol for NAD Products v2.02:
 	//
 	// All communication should be done at a rate of 115200 bps with 8 data
 	// bits, 1 stop bit and no parity bits. No flow control should be
 	// performed.
-	port, err := term.Open(device, term.Speed(115200), term.RawMode, term.FlowControl(term.NONE))
-	if err != nil {
-		return nil, err
+	return term.Open(name, term.Speed(115200), term.RawMode, term.FlowControl(term.NONE))
+}
+
+// Client reprensents a client to the amplifier.
+type Client struct {
+	device       *device
+	mu           sync.Mutex
+	EnableVolume bool
+}
+
+// New creates a new client to the amplifier, using named device for communication.
+func New(name string) *Client {
+	device := &device{
+		name:         name,
+		openPort:     openPort,
+		evalSymlinks: filepath.EvalSymlinks,
 	}
-	return &Client{port: port}, nil
+	return &Client{device: device}
 }
 
 // Close closes the underlying device
 func (n *Client) Close() error {
-	return n.port.Close()
+	return n.device.port.Close()
 }
 
 // SendCmd validates and sends the command cmd to the amplifier.
@@ -70,14 +105,17 @@ func (n *Client) SendString(s string) (string, error) {
 func (n *Client) Send(cmd []byte) ([]byte, error) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-	reader := bufio.NewReader(n.port)
+	if err := n.device.ensureOpen(); err != nil {
+		return nil, err
+	}
+	reader := bufio.NewReader(n.device.port)
 	// Discard any unread data before sending command
-	if t, ok := n.port.(*term.Term); ok {
+	if t, ok := n.device.port.(*term.Term); ok {
 		if err := t.Flush(); err != nil {
 			return nil, err
 		}
 	}
-	if _, err := n.port.Write(cmd); err != nil {
+	if _, err := n.device.port.Write(cmd); err != nil {
 		return nil, err
 	}
 	// Discard newlines

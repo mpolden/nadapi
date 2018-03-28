@@ -2,6 +2,7 @@ package nad
 
 import (
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -40,7 +41,7 @@ func (p *testPort) Write(b []byte) (n int, err error) {
 	return len(b), nil
 }
 
-func newTestPort() *testPort {
+func newTestPort(string) (io.ReadWriteCloser, error) {
 	reply := make(chan string, 1)
 	state := make(map[string]Cmd)
 	// Initial state
@@ -51,11 +52,15 @@ func newTestPort() *testPort {
 	state["speakerb"] = Cmd{Variable: "SpeakerB", Operator: "=", Value: "Off"}
 	state["tape1"] = Cmd{Variable: "Tape1", Operator: "=", Value: "Off"}
 	state["source"] = Cmd{Variable: "Source", Operator: "=", Value: "CD"}
-	return &testPort{reply: reply, state: state}
+	return &testPort{reply: reply, state: state}, nil
 }
 
 // NewTestClient creates a client that communicates with a simulated amp.
 func NewTestClient() *Client {
-	port := newTestPort()
-	return &Client{port: port, EnableVolume: true}
+	device := &device{
+		name:         "/dev/foo",
+		openPort:     newTestPort,
+		evalSymlinks: func(string) (string, error) { return "/dev/realfoo", nil },
+	}
+	return &Client{device: device, EnableVolume: true}
 }

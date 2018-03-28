@@ -23,18 +23,15 @@ type serverCmd struct {
 	StaticDir string `short:"s" long:"static" description:"Path to directory containing static assets" value-name:"DIR"`
 }
 
-func newClient(device string, test bool) (*nad.Client, error) {
+func newClient(device string, test bool) *nad.Client {
 	if test {
-		return nad.NewTestClient(), nil
+		return nad.NewTestClient()
 	}
 	return nad.New(device)
 }
 
 func (s *serverCmd) Execute(args []string) error {
-	client, err := newClient(s.Device, s.Test)
-	if err != nil {
-		return err
-	}
+	client := newClient(s.Device, s.Test)
 	client.EnableVolume = s.EnableVolume
 	server := http.New(client)
 	server.StaticDir = s.StaticDir
@@ -57,10 +54,7 @@ type sendCmd struct {
 }
 
 func (s *sendCmd) Execute(args []string) error {
-	client, err := newClient(s.Device, s.Test)
-	if err != nil {
-		return err
-	}
+	client := newClient(s.Device, s.Test)
 	defer client.Close()
 	client.EnableVolume = s.EnableVolume
 	cmd := s.Args.Command

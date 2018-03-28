@@ -207,3 +207,22 @@ func TestEnableVolume(t *testing.T) {
 		t.Error("Expected error")
 	}
 }
+
+func TestEnsureOpen(t *testing.T) {
+	nad := NewTestClient()
+	if _, err := nad.Power(true); err != nil {
+		t.Fatal(err)
+	}
+	if want := "/dev/realfoo"; nad.device.realname != want {
+		t.Errorf("want %s, got %s", want, nad.device.realname)
+	}
+	// Device symlink changes
+	nad.device.evalSymlinks = func(string) (string, error) { return "/dev/realbar", nil }
+	// Sending command updates device realname
+	if _, err := nad.Power(true); err != nil {
+		t.Fatal(err)
+	}
+	if want := "/dev/realbar"; nad.device.realname != want {
+		t.Errorf("want %s, got %s", want, nad.device.realname)
+	}
+}
